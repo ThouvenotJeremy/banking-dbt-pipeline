@@ -1,0 +1,8 @@
+[sqlfluff]
+templater = dbt
+dialect = duckdb
+indent_unit = space
+tab_space_size = 4
+
+[sqlfluff:templater:dbt]
+project_dir = .
