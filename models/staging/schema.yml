@@ -1,0 +1,144 @@
+version: 2
+
+models:
+  - name: stg_dim_cli
+    description: "Clients extraits du core banking. Une ligne par client actif."
+    columns:
+      - name: client_id
+        description: "Identifiant unique du client"
+        tests:
+          - not_null
+          - unique
+      - name: client_name
+        description: "Nom complet du client"
+        tests:
+          - not_null
+      - name: client_category
+        description: "Catégorie du client : PRIVATE ou RETAIL"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['PRIVATE', 'RETAIL']
+      - name: currency
+        description: "Devise de référence du client"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['USD', 'CHF', 'EUR', 'GBP']
+      - name: country
+        description: "Pays de domicile"
+        tests:
+          - not_null
+      - name: relationship_manager_id
+        description: "RM responsable du client"
+        tests:
+          - not_null
+      - name: opening_date
+        description: "Date d'ouverture du client"
+        tests:
+          - not_null
+
+  - name: stg_dim_ptf
+    description: "Portefeuilles extraits du core banking. Une ligne par portefeuille actif."
+    columns:
+      - name: ptf_id
+        description: "Identifiant unique du portefeuille"
+        tests:
+          - not_null
+          - unique
+      - name: ptf_name
+        description: "Libellé du portefeuille"
+        tests:
+          - not_null
+      - name: client_id
+        description: "Client propriétaire du portefeuille"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_dim_cli')
+                field: client_id
+      - name: currency
+        description: "Devise de référence du portefeuille"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['USD', 'CHF', 'EUR', 'GBP']
+      - name: risk_profile
+        description: "Profil de risque : GROWTH, BALANCED, CONSERV"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['GROWTH', 'BALANCED', 'CONSERV']
+      - name: manager_id
+        description: "RM gestionnaire du portefeuille"
+        tests:
+          - not_null
+      - name: opening_date
+        description: "Date d'ouverture du portefeuille"
+        tests:
+          - not_null
+
+  - name: stg_fct_ope
+    description: "Opérations financières brutes. Une ligne par opération."
+    columns:
+      - name: fct_ope_id
+        description: "Identifiant technique unique de l'opération"
+        tests:
+          - not_null
+          - unique
+      - name: ope_id
+        description: "Code métier de l'opération"
+        tests:
+          - not_null
+          - unique
+      - name: ptf_id
+        description: "Portefeuille de rattachement"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_dim_ptf')
+                field: ptf_id
+      - name: asset_id
+        description: "Identifiant de l'asset (titre, instrument)"
+        tests:
+          - not_null
+      - name: currency
+        description: "Devise de l'opération"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['USD', 'CHF', 'EUR', 'GBP']
+      - name: ope_type
+        description: "Type d'opération : BUY ou SELL"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['BUY', 'SELL']
+      - name: accounting_date
+        description: "Date comptable de l'opération"
+        tests:
+          - not_null
+      - name: value_date
+        description: "Date de valeur de l'opération"
+        tests:
+          - not_null
+      - name: quantity
+        description: "Quantité de titres échangés"
+        tests:
+          - not_null
+      - name: amount
+        description: "Montant brut de l'opération en devise locale"
+        tests:
+          - not_null
+      - name: amount_ref
+        description: "Montant en devise de référence"
+        tests:
+          - not_null

@@ -1,0 +1,19 @@
+version: 2
+
+sources:
+  - name: st0
+    schema: main
+    description: "Données brutes simulant Avaloq"
+    tables:
+      - name: st0_fct_ope
+        description: "Transactions financières brutes"
+      - name: st0_fct_ast
+        description: "Positions d'actifs brutes"
+      - name: st0_dim_cli
+        description: "Référentiel clients"
+      - name: st0_dim_ptf
+        description: "Référentiel portefeuilles"
+      - name: st0_fct_xrt
+        description: "Taux de change"
+      - name: st0_fct_xrt_prices
+        description: "Taux de change et prix de marché journaliers"

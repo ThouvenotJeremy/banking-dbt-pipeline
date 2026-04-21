@@ -1,5 +1,5 @@
 with source as (
-    select * from {{ ref('st0_dim_ptf') }}
+    select * from {{ source('st0', 'st0_dim_ptf') }}
 ),
 
 cleaned as (

@@ -1,5 +1,5 @@
 with source as (
-    select * from {{ ref('st0_fct_ope') }}
+    select * from {{ source('st0', 'st0_fct_ope') }}
 ),
 
 cleaned as (
