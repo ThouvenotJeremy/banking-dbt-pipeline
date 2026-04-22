@@ -1,21 +1,17 @@
 with source as (
-    select * from {{ ref('clients_snapshot') }}
+    select * from {{ ref('portfolio_snapshot') }}
 ),
 calendar as (
     select * from {{ ref('stg_set_cal') }}
 )
 
-
 select
     dt_fct,
+    ptf_id,
+    ptf_name,
     client_id,
-    client_name,
-    client_category,
     currency,
-    country,
-    relationship_manager_id,
-    opening_date,
-    closing_date,
+    risk_profile,
     loaded_at,
     dbt_updated_at as updated_at,
     dbt_valid_from as valid_from,
