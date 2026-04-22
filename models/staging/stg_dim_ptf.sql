@@ -11,7 +11,7 @@ cleaned as (
         cd_prf as risk_profile,
         cd_mng as manager_id,
         cast(dt_cre as date) as opening_date,
-        cast(dt_clo as date) as closing_date,
+        dt_clo as closing_date, 
         cast(ts_stg as date) as loaded_at
     from source
 )

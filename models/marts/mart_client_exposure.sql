@@ -16,9 +16,14 @@ select
     sum(ptf_idx.amount_position * xrt_rates.rt_val) as amount_position_base_ccy
 
 from ptf_idx
-asof join xrt_rates
-    on ptf_idx.pos_currency = xrt_rates.cd_ccy
-    and ptf_idx.dt_fct >= cast(xrt_rates.ts_stg as date)
+inner join {{ ref('st0_fct_xrt') }} xrt_rates
+    on ptf_idx.currency = xrt_rates.CD_CCY
+    and xrt_rates.DT_FCT = (
+        select max(x2.DT_FCT)
+        from {{ ref('st0_fct_xrt') }} x2
+        where x2.CD_CCY = ptf_idx.currency
+          and x2.DT_FCT <= ptf_idx.dt_fct
+    )
 
 group by
     ptf_idx.dt_fct,

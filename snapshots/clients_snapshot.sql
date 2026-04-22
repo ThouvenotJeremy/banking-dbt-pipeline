@@ -2,7 +2,7 @@
 
 {{
     config(
-        target_schema='main',
+        target_schema='PUBLIC',
         unique_key='client_id',
         strategy='timestamp',
         updated_at='loaded_at'

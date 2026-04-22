@@ -16,7 +16,12 @@ select
     fct_ast.amount_position,
     fct_ast.currency as pos_currency
 from ptf
-asof join fct_ast
+inner join fct_ast
     on ptf.ptf_id = fct_ast.ptf_id
     and ptf.client_id = fct_ast.client_id
-    and ptf.dt_fct >= fct_ast.value_date
+    and fct_ast.value_date = (
+        select max(f2.value_date)
+        from {{ ref('int_fct_ast') }} f2
+        where f2.ptf_id = ptf.ptf_id
+          and f2.value_date <= ptf.dt_fct
+    )

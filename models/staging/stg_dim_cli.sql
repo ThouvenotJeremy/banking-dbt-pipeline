@@ -11,7 +11,7 @@ cleaned as (
         cd_cty_dom as country,
         cd_mng_rel as relationship_manager_id,
         cast(dt_cre as date) as opening_date,
-        cast(dt_clo as date) as closing_date,
+        dt_clo as closing_date,
         cast(TS_STG as timestamp) as loaded_at
     from source
 )
