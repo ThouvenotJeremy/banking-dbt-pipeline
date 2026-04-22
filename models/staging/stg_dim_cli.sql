@@ -12,7 +12,7 @@ cleaned as (
         cd_mng_rel as relationship_manager_id,
         cast(dt_cre as date) as opening_date,
         cast(dt_clo as date) as closing_date,
-        cast(ts_stg as date) as loaded_at
+        cast(TS_STG as timestamp) as loaded_at
     from source
 )
 
