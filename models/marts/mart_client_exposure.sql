@@ -1,24 +1,28 @@
-with fct_ast as (
-    select * from {{ ref('int_fct_ast') }}
+with ptf_idx as (
+    select * from {{ ref('int_ptf_idx') }}
 ),
 
 xrt_rates as (
     select * from {{ ref('st0_fct_xrt') }}
 )
 
-
 select
-    fct_ast.ptf_id,
-    fct_ast.client_id,
-    fct_ast.asset_id,
-    fct_ast.currency,
-    fct_ast.amount_position,
+    ptf_idx.dt_fct,
+    ptf_idx.client_id,
+    ptf_idx.asset_id,
+    ptf_idx.currency,
     xrt_rates.rt_val as xrt_rate,
-    xrt_rates.cd_ccy as xrt_rate_currency,
-    fct_ast.amount_position as market_value,
-    fct_ast.amount_position * xrt_rates.rt_val as market_value_usd,
-    current_date as performance_date,
-    current_timestamp as loaded_at
-from fct_ast
-left join xrt_rates
-    on fct_ast.currency = xrt_rates.cd_ccy
+    sum(ptf_idx.amount_position) as amount_position,
+    sum(ptf_idx.amount_position * xrt_rates.rt_val) as amount_position_base_ccy
+
+from ptf_idx
+asof join xrt_rates
+    on ptf_idx.pos_currency = xrt_rates.cd_ccy
+    and ptf_idx.dt_fct >= cast(xrt_rates.ts_stg as date)
+
+group by
+    ptf_idx.dt_fct,
+    ptf_idx.client_id,
+    ptf_idx.asset_id,
+    ptf_idx.currency,
+    xrt_rates.rt_val

@@ -13,7 +13,8 @@ select
     ptf.risk_profile,
     fct_ast.asset_id,
     fct_ast.quantity,
-    fct_ast.amount_position
+    fct_ast.amount_position,
+    fct_ast.currency as pos_currency
 from ptf
 asof join fct_ast
     on ptf.ptf_id = fct_ast.ptf_id
