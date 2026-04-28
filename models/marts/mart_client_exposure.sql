@@ -1,3 +1,11 @@
+{{
+    config(
+        materialized='table',
+        cluster_by=['DT_FCT', 'CLIENT_ID'],
+        snowflake_warehouse='COMPUTE_WH_ETL'
+    )
+}}
+
 with ptf_idx as (
     select * from {{ ref('int_ptf_idx') }}
 ),
