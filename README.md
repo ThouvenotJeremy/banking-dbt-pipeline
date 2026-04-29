@@ -1,5 +1,7 @@
 # Banking DBT Pipeline
 
+![DBT CI](https://github.com/ThouvenotJeremy/banking-dbt-pipeline/actions/workflows/dbt_ci.yml/badge.svg)
+
 A production-ready data pipeline framework inspired by **Avaloq/Azqore core banking architecture**, built with DBT and Snowflake. Designed to be adapter to any core banking system (Avaloq, Temenos, Murex, etc).
 
 ---
