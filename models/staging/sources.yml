@@ -2,7 +2,6 @@ version: 2
 
 sources:
   - name: st0
-    schema: PUBLIC
     description: "Données brutes simulant Avaloq"
     tables:
       - name: st0_fct_ope
