@@ -37,12 +37,12 @@ jobs:
 
       - name: DBT Seed
         run: dbt seed
-        working-directory: ./banking_pipeline/banking_pipeline
+        working-directory: banking_pipeline
 
       - name: DBT Run
         run: dbt run
-        working-directory: ./banking_pipeline/banking_pipeline
+        working-directory: banking_pipeline
 
       - name: DBT Test
         run: dbt test
-        working-directory: ./banking_pipeline/banking_pipeline
+        working-directory: banking_pipeline
