@@ -1,0 +1,48 @@
+name: DBT CI Pipeline
+
+"on":
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  dbt-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: pip install dbt-core dbt-duckdb
+
+      - name: Create profiles.yml
+        run: |
+          mkdir -p ~/.dbt
+          cat << EOF > ~/.dbt/profiles.yml
+          banking_pipeline:
+            outputs:
+              dev:
+                type: duckdb
+                path: dev.duckdb
+                threads: 1
+            target: dev
+          EOF
+
+      - name: DBT Seed
+        run: dbt seed
+        working-directory: ./banking_pipeline/banking_pipeline
+
+      - name: DBT Run
+        run: dbt run
+        working-directory: ./banking_pipeline/banking_pipeline
+
+      - name: DBT Test
+        run: dbt test
+        working-directory: ./banking_pipeline/banking_pipeline
