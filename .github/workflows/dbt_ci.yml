@@ -35,6 +35,9 @@ jobs:
             target: dev
           EOF
 
+      - name: DBT Deps
+        run: dbt deps
+
       - name: DBT Seed
         run: dbt seed
 
