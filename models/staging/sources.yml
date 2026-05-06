@@ -9,11 +9,19 @@ sources:
         description: "Transactions financières brutes"
       - name: st0_fct_ast
         description: "Positions d'actifs brutes"
-      - name: st0_dim_cli
+      - name: st0_cli
         description: "Référentiel clients"
-      - name: st0_dim_ptf
+      - name: st0_ptf
         description: "Référentiel portefeuilles"
       - name: st0_fct_xrt
         description: "Taux de change"
       - name: st0_fct_xrt_prices
         description: "Taux de change et prix de marché journaliers"
+      - name: st0_mng
+        description: "Relationship Managers"
+      - name: st0_ins
+        description: "Instruments financiers"
+      - name: st0_fct_ptf
+        description: "Performance portefeuille mensuelle"
+      - name: st0_fct_mvt
+        description: "Mouvements liés aux opérations"

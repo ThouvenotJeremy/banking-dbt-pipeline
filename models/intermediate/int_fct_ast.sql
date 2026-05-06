@@ -1,5 +1,5 @@
 with ptf as (
-    select * from {{ ref('stg_dim_ptf') }}
+    select * from {{ ref('stg_ptf') }}
 ),
 
 fct_ast as (

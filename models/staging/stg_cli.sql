@@ -1,9 +1,8 @@
-with source as (
-    select * from {{ source('st0', 'st0_dim_cli') }}
-),
+with st0_cli as (
+    select * from {{ source('st0', 'st0_cli') }}
+)
 
-cleaned as (
-    select
+select
         cd_cli as client_id,
         lb_cli as client_name,
         cd_cli_cat as client_category,
@@ -13,7 +12,4 @@ cleaned as (
         cast(dt_cre as date) as opening_date,
         dt_clo as closing_date,
         cast(TS_STG as timestamp) as loaded_at
-    from source
-)
-
-select * from cleaned
+    from st0_cli

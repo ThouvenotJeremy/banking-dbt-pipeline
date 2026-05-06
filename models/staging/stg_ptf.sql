@@ -1,8 +1,6 @@
-with source as (
-    select * from {{ source('st0', 'st0_dim_ptf') }}
-),
-
-cleaned as (
+with st0_dim_ptf as (
+    select * from {{ source('st0', 'st0_ptf') }}
+)
     select
         cd_ptf as ptf_id,
         lb_ptf as ptf_name,
@@ -13,7 +11,4 @@ cleaned as (
         cast(dt_cre as date) as opening_date,
         dt_clo as closing_date, 
         cast(ts_stg as date) as loaded_at
-    from source
-)
-
-select * from cleaned
+    from st0_dim_ptf

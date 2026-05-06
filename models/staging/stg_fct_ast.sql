@@ -1,4 +1,4 @@
-with source as (
+with st0_fct_ast as (
     select * from {{ source('st0', 'st0_fct_ast') }}
 )
 
@@ -13,4 +13,4 @@ select
     mt_ast as amount,
     cast(dt_fct as date) as value_date,
     cast(ts_stg as date) as loaded_at
-from source
+from st0_fct_ast

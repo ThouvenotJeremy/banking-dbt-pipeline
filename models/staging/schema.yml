@@ -1,7 +1,7 @@
 version: 2
 
 models:
-  - name: stg_dim_cli
+  - name: stg_cli
     description: "Clients extraits du core banking. Une ligne par client actif."
     columns:
       - name: client_id
@@ -40,7 +40,7 @@ models:
         tests:
           - not_null
 
-  - name: stg_dim_ptf
+  - name: stg_ptf
     description: "Portefeuilles extraits du core banking. Une ligne par portefeuille actif."
     columns:
       - name: ptf_id
@@ -58,7 +58,7 @@ models:
           - not_null
           - relationships:
               arguments:
-                to: ref('stg_dim_cli')
+                to: ref('stg_cli')
                 field: client_id
       - name: currency
         description: "Devise de référence du portefeuille"
@@ -102,7 +102,7 @@ models:
           - not_null
           - relationships:
               arguments:
-                to: ref('stg_dim_ptf')
+                to: ref('stg_ptf')
                 field: ptf_id
       - name: asset_id
         description: "Identifiant de l'asset (titre, instrument)"

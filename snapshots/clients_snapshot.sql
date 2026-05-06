@@ -9,6 +9,6 @@
     )
 }}
 
-select * from {{ ref('stg_dim_cli') }}
+select * from {{ ref('stg_cli') }}
 
 {% endsnapshot %}

@@ -1,8 +1,6 @@
-with source as (
+with st0_fct_ope as (
     select * from {{ source('st0', 'st0_fct_ope') }}
-),
-
-cleaned as (
+)
     select
         cd_fct_ope as fct_ope_id,
         cd_ope as ope_id,
@@ -17,7 +15,4 @@ cleaned as (
         mt_ope_ref as amount_ref,
         yn_pro as is_provisional,
         cast(ts_stg as date) as loaded_at
-    from source
-)
-
-select * from cleaned
+    from st0_fct_ope
