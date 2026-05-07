@@ -56,7 +56,17 @@ models:
         description: "Valorisation de la position en devise locale"
         tests:
           - not_null
+      - name: xrt_rate
+        description: "Taux de change appliqué vers la devise de référence (USD)"
+      - name: xrt_rate_currency
+        description: "Devise source du taux de change"
+      - name: market_value
+        description: "Valorisation de la position en devise locale (identique à amount_position)"
+      - name: market_value_usd
+        description: "Valorisation de la position convertie en USD"
       - name: performance_date
         description: "Date de valorisation"
         tests:
           - not_null
+      - name: loaded_at
+        description: "Horodatage de génération de la ligne"

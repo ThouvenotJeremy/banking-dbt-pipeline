@@ -3,25 +3,191 @@ version: 2
 sources:
   - name: st0
     schema: "{{ 'main' if target.type == 'duckdb' else 'PUBLIC' }}"
-    description: "Données brutes simulant Avaloq"
+    description: "Couche de données brutes simulant le core banking Avaloq. Toutes les tables sont préfixées st0_."
     tables:
-      - name: st0_fct_ope
-        description: "Transactions financières brutes"
-      - name: st0_fct_ast
-        description: "Positions d'actifs brutes"
       - name: st0_cli
-        description: "Référentiel clients"
+        description: "Référentiel clients brut. Une ligne par client."
+        columns:
+          - name: cd_cli
+            description: "Code unique du client"
+          - name: lb_cli
+            description: "Libellé / nom du client"
+          - name: cd_cli_cat
+            description: "Catégorie du client (PRIVATE, RETAIL)"
+          - name: cd_ccy
+            description: "Code devise de référence du client"
+          - name: cd_cty_dom
+            description: "Code pays de domicile"
+          - name: cd_mng_rel
+            description: "Code du relationship manager responsable"
+          - name: dt_cre
+            description: "Date de création / ouverture du client"
+          - name: dt_clo
+            description: "Date de clôture du client (null si actif)"
+          - name: ts_stg
+            description: "Horodatage de chargement en staging"
+
       - name: st0_ptf
-        description: "Référentiel portefeuilles"
+        description: "Référentiel portefeuilles brut. Une ligne par portefeuille."
+        columns:
+          - name: cd_ptf
+            description: "Code unique du portefeuille"
+          - name: lb_ptf
+            description: "Libellé du portefeuille"
+          - name: cd_cli
+            description: "Code du client propriétaire"
+          - name: cd_ccy
+            description: "Code devise de référence du portefeuille"
+          - name: cd_prf
+            description: "Code profil de risque (GROWTH, BALANCED, CONSERV)"
+          - name: cd_mng
+            description: "Code du manager gestionnaire du portefeuille"
+          - name: dt_cre
+            description: "Date de création / ouverture du portefeuille"
+          - name: dt_clo
+            description: "Date de clôture du portefeuille (null si actif)"
+          - name: ts_stg
+            description: "Horodatage de chargement en staging"
+
+      - name: st0_fct_ope
+        description: "Transactions financières brutes. Une ligne par opération."
+        columns:
+          - name: cd_fct_ope
+            description: "Identifiant technique unique de l'opération"
+          - name: cd_ope
+            description: "Code métier de l'opération"
+          - name: cd_ptf
+            description: "Code du portefeuille de rattachement"
+          - name: cd_ast
+            description: "Code de l'actif (titre, instrument)"
+          - name: cd_ccy_ope
+            description: "Code devise de l'opération"
+          - name: cd_ope_typ
+            description: "Type d'opération (BUY, SELL)"
+          - name: dt_cta
+            description: "Date comptable de l'opération"
+          - name: dt_val
+            description: "Date de valeur de l'opération"
+          - name: qt_ope
+            description: "Quantité de titres échangés"
+          - name: mt_ope
+            description: "Montant brut en devise locale"
+          - name: mt_ope_ref
+            description: "Montant en devise de référence"
+          - name: yn_pro
+            description: "Indicateur d'opération provisoire (Y/N)"
+          - name: ts_stg
+            description: "Horodatage de chargement en staging"
+
+      - name: st0_fct_ast
+        description: "Positions d'actifs brutes. Une ligne par position et par date de valorisation."
+        columns:
+          - name: cd_fct_ast
+            description: "Identifiant technique unique de la position"
+          - name: cd_pos
+            description: "Code de la position"
+          - name: cd_pos_typ
+            description: "Type de position"
+          - name: cd_ptf
+            description: "Code du portefeuille de rattachement"
+          - name: cd_ast
+            description: "Code de l'actif"
+          - name: cd_ccy
+            description: "Code devise de la position"
+          - name: qt_ast
+            description: "Quantité détenue"
+          - name: mt_ast
+            description: "Valorisation de la position en devise locale"
+          - name: dt_fct
+            description: "Date de valorisation"
+          - name: ts_stg
+            description: "Horodatage de chargement en staging"
+
       - name: st0_fct_xrt
-        description: "Taux de change"
+        description: "Taux de change journaliers. Une ligne par devise et par date."
+        columns:
+          - name: DT_FCT
+            description: "Date du taux de change"
+          - name: CD_CCY
+            description: "Code devise source"
+          - name: rt_val
+            description: "Valeur du taux de change vers la devise de référence"
+
       - name: st0_fct_xrt_prices
-        description: "Taux de change et prix de marché journaliers"
+        description: "Taux de change et prix de marché journaliers. Une ligne par instrument et par date."
+
       - name: st0_mng
-        description: "Relationship Managers"
+        description: "Référentiel Relationship Managers. Une ligne par manager."
+        columns:
+          - name: cd_mng
+            description: "Code unique du manager"
+          - name: lb_mng
+            description: "Nom complet du manager"
+          - name: cd_mng_grp
+            description: "Code du groupe / équipe du manager"
+          - name: ts_stg
+            description: "Horodatage de chargement en staging"
+
       - name: st0_ins
-        description: "Instruments financiers"
+        description: "Référentiel instruments financiers. Une ligne par instrument."
+        columns:
+          - name: cd_ins
+            description: "Code unique de l'instrument"
+          - name: lb_ins
+            description: "Libellé de l'instrument"
+          - name: cd_ins_grp
+            description: "Code du groupe d'instruments"
+          - name: ts_stg
+            description: "Horodatage de chargement en staging"
+
       - name: st0_fct_ptf
-        description: "Performance portefeuille mensuelle"
+        description: "Performance portefeuille mensuelle brute. Une ligne par portefeuille et par mois."
+        columns:
+          - name: cd_fct_ptf
+            description: "Identifiant technique unique du fait portefeuille"
+          - name: cd_ptf
+            description: "Code du portefeuille"
+          - name: dt_fct
+            description: "Date de fin de mois du fait"
+          - name: mt_net_ref
+            description: "Actif net en devise de référence"
+          - name: mt_aci_ref
+            description: "Actif net corrigé des intérêts courus en devise de référence"
+          - name: mt_lia_ref
+            description: "Passif en devise de référence"
+          - name: mt_pnl_ref
+            description: "Résultat (P&L) en devise de référence"
+          - name: mt_inc_ref_mtd
+            description: "Flux entrants month-to-date en devise de référence"
+          - name: mt_out_ref_mtd
+            description: "Flux sortants month-to-date en devise de référence"
+          - name: mt_nnm_inc_ref_mtd
+            description: "NNM entrant month-to-date en devise de référence"
+          - name: mt_nnm_out_ref_mtd
+            description: "NNM sortant month-to-date en devise de référence"
+          - name: ts_stg
+            description: "Horodatage de chargement en staging"
+
       - name: st0_fct_mvt
-        description: "Mouvements liés aux opérations"
+        description: "Mouvements liés aux opérations financières. Une ligne par mouvement."
+        columns:
+          - name: cd_fct_mvt
+            description: "Identifiant technique unique du mouvement"
+          - name: cd_fct_ope
+            description: "Identifiant de l'opération source"
+          - name: cd_ptf
+            description: "Code du portefeuille de rattachement"
+          - name: cd_ast
+            description: "Code de l'actif concerné"
+          - name: cd_mvt_typ
+            description: "Type de mouvement"
+          - name: dt_cta
+            description: "Date comptable / de valeur du mouvement"
+          - name: mt_mvt
+            description: "Montant du mouvement en devise locale"
+          - name: mt_mvt_ref
+            description: "Montant du mouvement en devise de référence"
+          - name: cd_ccy_mvt
+            description: "Code devise du mouvement"
+          - name: ts_stg
+            description: "Horodatage de chargement en staging"

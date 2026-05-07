@@ -42,6 +42,12 @@ models:
         description: "Date d'ouverture du client"
         tests:
           - not_null
+      - name: closing_date
+        description: "Date de clôture du client (null si actif)"
+      - name: loaded_at
+        description: "Date de chargement depuis la source"
+      - name: updated_at
+        description: "Horodatage de la dernière mise à jour de l'enregistrement SCD2"
       - name: valid_from
         description: "Début de validité de l'enregistrement SCD2"
         tests:
@@ -80,6 +86,10 @@ models:
           - accepted_values:
               arguments:
                 values: ['GROWTH', 'BALANCED', 'CONSERV']
+      - name: loaded_at
+        description: "Date de chargement depuis la source"
+      - name: updated_at
+        description: "Horodatage de la dernière mise à jour de l'enregistrement SCD2"
       - name: valid_from
         description: "Début de validité de l'enregistrement SCD2"
         tests:

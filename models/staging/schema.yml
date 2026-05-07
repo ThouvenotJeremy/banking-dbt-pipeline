@@ -39,6 +39,10 @@ models:
         description: "Date d'ouverture du client"
         tests:
           - not_null
+      - name: closing_date
+        description: "Date de clôture du client (null si actif)"
+      - name: loaded_at
+        description: "Horodatage de chargement en staging"
 
   - name: stg_ptf
     description: "Portefeuilles extraits du core banking. Une ligne par portefeuille actif."
@@ -82,6 +86,10 @@ models:
         description: "Date d'ouverture du portefeuille"
         tests:
           - not_null
+      - name: closing_date
+        description: "Date de clôture du portefeuille (null si actif)"
+      - name: loaded_at
+        description: "Horodatage de chargement en staging"
 
   - name: stg_fct_ope
     description: "Opérations financières brutes. Une ligne par opération."
@@ -142,6 +150,10 @@ models:
         description: "Montant en devise de référence"
         tests:
           - not_null
+      - name: is_provisional
+        description: "Indicateur d'opération provisoire (non définitivement comptabilisée)"
+      - name: loaded_at
+        description: "Date de chargement en staging"
 
   - name: stg_mng
     description: "Relationship Managers extraits du core banking. Une ligne par manager."
@@ -291,5 +303,74 @@ models:
                 values: ['USD', 'CHF', 'EUR', 'GBP']
       - name: loaded_at
         description: "Horodatage de chargement en staging"
+        tests:
+          - not_null
+
+  - name: stg_fct_ast
+    description: "Positions d'actifs extraites du core banking. Une ligne par position et par date de valorisation."
+    columns:
+      - name: fct_ast_id
+        description: "Identifiant technique unique de la position"
+        tests:
+          - not_null
+          - unique
+      - name: pos_id
+        description: "Identifiant de la position"
+        tests:
+          - not_null
+      - name: pos_typ_id
+        description: "Type de position"
+        tests:
+          - not_null
+      - name: ptf_id
+        description: "Portefeuille de rattachement"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_ptf')
+                field: ptf_id
+      - name: asset_id
+        description: "Identifiant de l'actif"
+        tests:
+          - not_null
+      - name: currency
+        description: "Devise de la position"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['USD', 'CHF', 'EUR', 'GBP']
+      - name: quantity
+        description: "Quantité détenue"
+        tests:
+          - not_null
+      - name: amount
+        description: "Valorisation de la position en devise locale"
+        tests:
+          - not_null
+      - name: value_date
+        description: "Date de valorisation"
+        tests:
+          - not_null
+      - name: loaded_at
+        description: "Date de chargement en staging"
+        tests:
+          - not_null
+
+  - name: stg_set_cal
+    description: "Calendrier des dates de fait. Génère une ligne par fin de mois depuis janvier 2024 jusqu'à aujourd'hui."
+    columns:
+      - name: dt_fct
+        description: "Date de fait (dernier jour du mois, ou date du jour pour le mois courant)"
+        tests:
+          - not_null
+          - unique
+      - name: vr_dwh_cal
+        description: "Représentation entière de la date au format YYYYMMDD"
+        tests:
+          - not_null
+      - name: cd_cal
+        description: "Code calendrier (valeur fixe : 1)"
         tests:
           - not_null
