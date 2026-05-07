@@ -1,0 +1,62 @@
+version: 2
+
+models:
+  - name: mart_client_exposure
+    description: "Exposition client par actif et par date, convertie en devise de base. Une ligne par client, actif et date de fait."
+    columns:
+      - name: dt_fct
+        description: "Date de fait"
+        tests:
+          - not_null
+      - name: client_id
+        description: "Identifiant du client"
+        tests:
+          - not_null
+      - name: asset_id
+        description: "Identifiant de l'actif"
+        tests:
+          - not_null
+      - name: currency
+        description: "Devise de la position"
+        tests:
+          - not_null
+      - name: xrt_rate
+        description: "Taux de change appliqué vers la devise de base"
+        tests:
+          - not_null
+      - name: amount_position
+        description: "Valorisation de la position en devise locale"
+        tests:
+          - not_null
+      - name: amount_position_base_ccy
+        description: "Valorisation de la position en devise de base"
+        tests:
+          - not_null
+
+  - name: mart_portfolio_performance
+    description: "Performance des portefeuilles avec valorisation FX. Une ligne par portefeuille, actif et date."
+    columns:
+      - name: ptf_id
+        description: "Identifiant du portefeuille"
+        tests:
+          - not_null
+      - name: client_id
+        description: "Client propriétaire du portefeuille"
+        tests:
+          - not_null
+      - name: asset_id
+        description: "Identifiant de l'actif"
+        tests:
+          - not_null
+      - name: currency
+        description: "Devise de la position"
+        tests:
+          - not_null
+      - name: amount_position
+        description: "Valorisation de la position en devise locale"
+        tests:
+          - not_null
+      - name: performance_date
+        description: "Date de valorisation"
+        tests:
+          - not_null

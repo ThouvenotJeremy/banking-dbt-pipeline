@@ -1,0 +1,174 @@
+version: 2
+
+models:
+  - name: int_cli
+    description: "Clients enrichis avec suivi SCD Type 2. Une ligne par client et par date de fait (dt_fct)."
+    columns:
+      - name: dt_fct
+        description: "Date de fait issue du calendrier"
+        tests:
+          - not_null
+      - name: client_id
+        description: "Identifiant unique du client"
+        tests:
+          - not_null
+      - name: client_name
+        description: "Nom complet du client"
+        tests:
+          - not_null
+      - name: client_category
+        description: "Catégorie du client : PRIVATE ou RETAIL"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['PRIVATE', 'RETAIL']
+      - name: currency
+        description: "Devise de référence du client"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['USD', 'CHF', 'EUR', 'GBP']
+      - name: country
+        description: "Pays de domicile"
+        tests:
+          - not_null
+      - name: relationship_manager_id
+        description: "RM responsable du client"
+        tests:
+          - not_null
+      - name: opening_date
+        description: "Date d'ouverture du client"
+        tests:
+          - not_null
+      - name: valid_from
+        description: "Début de validité de l'enregistrement SCD2"
+        tests:
+          - not_null
+
+  - name: int_ptf
+    description: "Portefeuilles enrichis avec suivi SCD Type 2. Une ligne par portefeuille et par date de fait (dt_fct)."
+    columns:
+      - name: dt_fct
+        description: "Date de fait issue du calendrier"
+        tests:
+          - not_null
+      - name: ptf_id
+        description: "Identifiant unique du portefeuille"
+        tests:
+          - not_null
+      - name: ptf_name
+        description: "Libellé du portefeuille"
+        tests:
+          - not_null
+      - name: client_id
+        description: "Client propriétaire du portefeuille"
+        tests:
+          - not_null
+      - name: currency
+        description: "Devise de référence du portefeuille"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['USD', 'CHF', 'EUR', 'GBP']
+      - name: risk_profile
+        description: "Profil de risque : GROWTH, BALANCED, CONSERV"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['GROWTH', 'BALANCED', 'CONSERV']
+      - name: valid_from
+        description: "Début de validité de l'enregistrement SCD2"
+        tests:
+          - not_null
+
+  - name: int_fct_ast
+    description: "Positions d'actifs enrichies avec le client de rattachement. Une ligne par position."
+    columns:
+      - name: fct_ast_id
+        description: "Identifiant technique unique de la position"
+        tests:
+          - not_null
+          - unique
+      - name: pos_id
+        description: "Identifiant de la position"
+        tests:
+          - not_null
+      - name: pos_typ_id
+        description: "Type de position"
+        tests:
+          - not_null
+      - name: ptf_id
+        description: "Portefeuille de rattachement"
+        tests:
+          - not_null
+      - name: client_id
+        description: "Client de rattachement (via portefeuille)"
+        tests:
+          - not_null
+      - name: asset_id
+        description: "Identifiant de l'actif"
+        tests:
+          - not_null
+      - name: currency
+        description: "Devise de la position"
+        tests:
+          - not_null
+      - name: quantity
+        description: "Quantité détenue"
+        tests:
+          - not_null
+      - name: amount_position
+        description: "Valorisation de la position en devise locale"
+        tests:
+          - not_null
+      - name: value_date
+        description: "Date de valorisation"
+        tests:
+          - not_null
+
+  - name: int_ptf_idx
+    description: "Index des positions par portefeuille et par date. Une ligne par portefeuille, actif et date de fait."
+    columns:
+      - name: dt_fct
+        description: "Date de fait"
+        tests:
+          - not_null
+      - name: ptf_id
+        description: "Identifiant du portefeuille"
+        tests:
+          - not_null
+      - name: client_id
+        description: "Client propriétaire du portefeuille"
+        tests:
+          - not_null
+      - name: currency
+        description: "Devise de référence du portefeuille"
+        tests:
+          - not_null
+      - name: risk_profile
+        description: "Profil de risque du portefeuille"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['GROWTH', 'BALANCED', 'CONSERV']
+      - name: asset_id
+        description: "Identifiant de l'actif"
+        tests:
+          - not_null
+      - name: quantity
+        description: "Quantité de l'actif détenu"
+        tests:
+          - not_null
+      - name: amount_position
+        description: "Valorisation de la position en devise locale"
+        tests:
+          - not_null
+      - name: pos_currency
+        description: "Devise de la position"
+        tests:
+          - not_null

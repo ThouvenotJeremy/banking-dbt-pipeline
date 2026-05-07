@@ -142,3 +142,154 @@ models:
         description: "Montant en devise de référence"
         tests:
           - not_null
+
+  - name: stg_mng
+    description: "Relationship Managers extraits du core banking. Une ligne par manager."
+    columns:
+      - name: manager_id
+        description: "Identifiant unique du manager"
+        tests:
+          - not_null
+          - unique
+      - name: manager_name
+        description: "Nom complet du manager"
+        tests:
+          - not_null
+      - name: manager_group_id
+        description: "Groupe / équipe du manager"
+        tests:
+          - not_null
+      - name: timestamp
+        description: "Horodatage de chargement en staging"
+        tests:
+          - not_null
+
+  - name: stg_ins
+    description: "Instruments financiers extraits du core banking. Une ligne par instrument."
+    columns:
+      - name: ins_id
+        description: "Identifiant unique de l'instrument"
+        tests:
+          - not_null
+          - unique
+      - name: ins_name
+        description: "Libellé de l'instrument"
+        tests:
+          - not_null
+      - name: ins_grp_id
+        description: "Groupe d'instruments"
+        tests:
+          - not_null
+      - name: loaded_at
+        description: "Date de chargement en staging"
+        tests:
+          - not_null
+
+  - name: stg_fct_ptf
+    description: "Performance mensuelle des portefeuilles. Une ligne par portefeuille et par date."
+    columns:
+      - name: fct_ptf_id
+        description: "Identifiant technique unique du fait portefeuille"
+        tests:
+          - not_null
+          - unique
+      - name: ptf_id
+        description: "Portefeuille de rattachement"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_ptf')
+                field: ptf_id
+      - name: dt_fct
+        description: "Date du fait (fin de mois)"
+        tests:
+          - not_null
+      - name: mt_net_ref
+        description: "Actif net en devise de référence"
+        tests:
+          - not_null
+      - name: mt_aci_ref
+        description: "Actif net corrigé des intérêts courus en devise de référence"
+        tests:
+          - not_null
+      - name: mt_lia_ref
+        description: "Passif en devise de référence"
+        tests:
+          - not_null
+      - name: mt_pnl_ref
+        description: "Résultat (P&L) en devise de référence"
+        tests:
+          - not_null
+      - name: mt_inc_ref_mtd
+        description: "Flux entrants MTD en devise de référence"
+        tests:
+          - not_null
+      - name: mt_out_ref_mtd
+        description: "Flux sortants MTD en devise de référence"
+        tests:
+          - not_null
+      - name: mt_nnm_inc_ref_mtd
+        description: "NNM entrant MTD en devise de référence"
+        tests:
+          - not_null
+      - name: mt_nnm_out_ref_mtd
+        description: "NNM sortant MTD en devise de référence"
+        tests:
+          - not_null
+      - name: loaded_at
+        description: "Horodatage de chargement en staging"
+        tests:
+          - not_null
+
+  - name: stg_fct_mvt
+    description: "Mouvements liés aux opérations financières. Une ligne par mouvement."
+    columns:
+      - name: fct_mvt_id
+        description: "Identifiant technique unique du mouvement"
+        tests:
+          - not_null
+          - unique
+      - name: fct_ope_id
+        description: "Opération source du mouvement"
+        tests:
+          - not_null
+      - name: ptf_id
+        description: "Portefeuille de rattachement"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_ptf')
+                field: ptf_id
+      - name: asset_id
+        description: "Identifiant de l'actif concerné"
+        tests:
+          - not_null
+      - name: mvt_typ_id
+        description: "Type de mouvement"
+        tests:
+          - not_null
+      - name: value_date
+        description: "Date de valeur du mouvement"
+        tests:
+          - not_null
+      - name: amount
+        description: "Montant du mouvement en devise locale"
+        tests:
+          - not_null
+      - name: amount_ref
+        description: "Montant du mouvement en devise de référence"
+        tests:
+          - not_null
+      - name: currency
+        description: "Devise du mouvement"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['USD', 'CHF', 'EUR', 'GBP']
+      - name: loaded_at
+        description: "Horodatage de chargement en staging"
+        tests:
+          - not_null
