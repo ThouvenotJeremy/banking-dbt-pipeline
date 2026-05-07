@@ -1,3 +1,13 @@
+{{
+    config(
+        materialized='table',
+        cluster_by=['DT_FCT', 'CLIENT_ID'],
+        post_hook=[
+            "{% if target.type == 'snowflake' %}grant select on {{ this }} to role BI_READ_ONLY{% endif %}"
+        ]
+    )
+}}
+
 with fct_ast as (
     select * from {{ ref('int_fct_ast') }}
 ),

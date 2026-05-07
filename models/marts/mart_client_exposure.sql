@@ -2,7 +2,9 @@
     config(
         materialized='table',
         cluster_by=['DT_FCT', 'CLIENT_ID'],
-        snowflake_warehouse='COMPUTE_WH_ETL'
+        post_hook=[
+            "{% if target.type == 'snowflake' %}grant select on {{ this }} to role BI_READ_ONLY{% endif %}"
+        ]
     )
 }}
 
