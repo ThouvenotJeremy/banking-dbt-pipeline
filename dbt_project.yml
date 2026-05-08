@@ -27,7 +27,7 @@ clean-targets:         # directories to be removed by `dbt clean`
 vars:
   start_date: '2024-01-01'
   reference_currency: 'USD'
-  aum_year: 2025
+  aum_year: null
 
 
 # Configuring models

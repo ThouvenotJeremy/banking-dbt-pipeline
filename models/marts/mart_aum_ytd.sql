@@ -96,5 +96,7 @@ select
     performance_date,
     loaded_at
 from ytd_calculation
+{% if var("aum_year") is not none %}
 where extract(year from dt_fct) = {{ var("aum_year") }}
+{% endif %}
 order by dt_fct desc, client_id, ptf_id
