@@ -23,6 +23,13 @@ clean-targets:         # directories to be removed by `dbt clean`
   - "dbt_packages"
 
 
+# Variables
+vars:
+  start_date: '2024-01-01'
+  reference_currency: 'USD'
+  aum_year: 2025
+
+
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models
 

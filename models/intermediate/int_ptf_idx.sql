@@ -1,5 +1,10 @@
-with ptf as (
+with calendar as (
+    select * from {{ ref('stg_set_cal') }}
+    where dt_fct >= '{{ var("start_date") }}'
+),
+ptf as (
     select * from {{ ref('int_ptf') }}
+    where dt_fct >= '{{ var("start_date") }}'
 ),
 fct_ast as (
     select * from {{ ref('int_fct_ast') }}
@@ -15,7 +20,8 @@ select
     fct_ast.quantity,
     fct_ast.amount_position,
     fct_ast.currency as pos_currency
-from ptf
+from calendar
+inner join ptf on calendar.dt_fct = ptf.dt_fct
 inner join fct_ast
     on ptf.ptf_id = fct_ast.ptf_id
     and ptf.client_id = fct_ast.client_id
