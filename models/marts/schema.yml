@@ -6,6 +6,11 @@ models:
     config:
       contract:
         enforced: true
+    tests:
+      - dbt_expectations.expect_table_row_count_to_be_between:
+          arguments:
+            min_value: 1
+            max_value: 10000
     columns:
       - name: dt_fct
         description: "Date de fait"
@@ -35,6 +40,13 @@ models:
         data_type: double
         tests:
           - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                strictly: false
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              arguments:
+                column_type: double
       - name: amount_position_base_ccy
         description: "Montant converti en devise de référence"
         data_type: double
@@ -43,6 +55,13 @@ models:
       - name: weight_pct
         description: "Poids de la position dans le portefeuille client"
         data_type: double
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 1
+                strictly: false
 
   - name: mart_portfolio_performance
     description: "Performance des portefeuilles avec valorisation FX. Une ligne par portefeuille, actif et date."
