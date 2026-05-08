@@ -22,9 +22,9 @@ select
     ptf_idx.asset_id,
     ptf_idx.currency,
     xrt_rates.rt_val as xrt_rate,
-    sum(ptf_idx.amount_position) as amount_position,
-    sum(ptf_idx.amount_position * xrt_rates.rt_val) as amount_position_base_ccy,
-    {{ safe_divide('ptf_idx.amount_position', 'sum(ptf_idx.amount_position) over (partition by ptf_idx.client_id, ptf_idx.dt_fct)') }} as weight_pct
+    cast(sum(ptf_idx.amount_position) as double) as amount_position,
+    cast(sum(ptf_idx.amount_position * xrt_rates.rt_val) as double) as amount_position_base_ccy,
+    cast({{ safe_divide('ptf_idx.amount_position', 'sum(ptf_idx.amount_position) over (partition by ptf_idx.client_id, ptf_idx.dt_fct)') }} as double) as weight_pct
 
 from ptf_idx
 inner join {{ ref('st0_fct_xrt') }} xrt_rates

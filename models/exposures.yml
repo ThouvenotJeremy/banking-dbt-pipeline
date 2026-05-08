@@ -1,0 +1,24 @@
+version: 2
+
+exposures:
+  - name: client_exposure_dashboard
+    type: dashboard
+    maturity: high
+    url: https://app.powerbi.com/banking-dbt-pipeline
+    description: "Dashboard Power BI d'exposition client par asset et par date. Consommé quotidiennement par les RMs."
+    depends_on:
+      - ref('mart_client_exposure')
+    owner:
+      name: Jeremy Thouvenot
+      email: j.thouvenot@outlook.com
+
+  - name: portfolio_performance_dashboard
+    type: dashboard
+    maturity: high
+    url: https://app.powerbi.com/banking-dbt-pipeline
+    description: "Dashboard Power BI de performance des portefeuilles avec conversion devise."
+    depends_on:
+      - ref('mart_portfolio_performance')
+    owner:
+      name: Jeremy Thouvenot
+      email: j.thouvenot@outlook.com
