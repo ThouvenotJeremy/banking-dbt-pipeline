@@ -171,3 +171,103 @@ models:
           - not_null
       - name: loaded_at
         description: "Horodatage de génération de la ligne"
+
+  - name: mart_rm_performance
+    description: "Performance des Relationship Managers (gestionnaires). Agrégation des AUM par RM avec métriques YTD et statistiques du book."
+    config:
+      contract:
+        enforced: true
+    tests:
+      - dbt_expectations.expect_table_row_count_to_be_between:
+          arguments:
+            min_value: 1
+            max_value: 1000
+    columns:
+      - name: dt_fct
+        description: "Date de fait"
+        data_type: date
+        tests:
+          - not_null
+      - name: manager_id
+        description: "Identifiant unique du Relationship Manager"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: manager_name
+        description: "Nom complet du gestionnaire"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: aum_current
+        description: "AUM total actuel du book du RM en devise locale"
+        data_type: double
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                strictly: false
+      - name: aum_ytd_start
+        description: "AUM du book du RM au 1er janvier de l'année (YTD start)"
+        data_type: double
+      - name: aum_ytd_variation_pct
+        description: "Variation YTD en pourcentage"
+        data_type: double
+        tests:
+          - not_null
+      - name: aum_ytd_variation_abs
+        description: "Variation YTD en montant absolu"
+        data_type: double
+        tests:
+          - not_null
+      - name: client_count
+        description: "Nombre unique de clients gérés par le RM"
+        data_type: bigint
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 1
+                strictly: false
+      - name: portfolio_count
+        description: "Nombre unique de portefeuilles gérés par le RM"
+        data_type: bigint
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 1
+                strictly: false
+      - name: category_count
+        description: "Nombre de catégories clients distinctes gérées"
+        data_type: bigint
+        tests:
+          - not_null
+      - name: aum_avg_per_client
+        description: "AUM moyen par client du RM"
+        data_type: double
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                strictly: false
+      - name: aum_avg_per_portfolio
+        description: "AUM moyen par portefeuille du RM"
+        data_type: double
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                strictly: false
+      - name: performance_date
+        description: "Date de génération du rapport"
+        data_type: date
+        tests:
+          - not_null
+      - name: loaded_at
+        description: "Horodatage de génération de la ligne"
+        data_type: timestamp
+        tests:
+          - not_null
