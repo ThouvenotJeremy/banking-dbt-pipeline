@@ -12,34 +12,64 @@ with ptf_idx as (
     select * from {{ ref('int_ptf_idx') }}
 ),
 
-xrt_rates as (
+cli as (
+    select * from {{ ref('int_cli') }}
+),
+
+ptf as (
+    select * from {{ ref('int_ptf') }}
+),
+
+ins as (
+    select * from {{ ref('stg_ins') }}
+),
+
+xrt as (
     select * from {{ ref('st0_fct_xrt') }}
 )
 
 select
     ptf_idx.dt_fct,
     ptf_idx.client_id,
+    cli.client_name,
+    cli.client_category,
+    cli.client_category_name,
+    cli.country,
+    cli.country_name,
+    ptf_idx.ptf_id,
+    ptf.ptf_name,
+    ptf.manager_id,
+    ptf.manager_name,
+    ptf_idx.risk_profile,
+    ptf.risk_profile_name,
     ptf_idx.asset_id,
+    ins.ins_name                                        as asset_name,
+    ins.ins_grp_id                                      as asset_class,
     ptf_idx.currency,
-    xrt_rates.rt_val as xrt_rate,
-    cast(sum(ptf_idx.amount_position) as double) as amount_position,
-    cast(sum(ptf_idx.amount_position * xrt_rates.rt_val) as double) as amount_position_base_ccy,
-    cast({{ safe_divide('ptf_idx.amount_position', 'sum(ptf_idx.amount_position) over (partition by ptf_idx.client_id, ptf_idx.dt_fct)') }} as double) as weight_pct
+    xrt.rt_val                                          as xrt_rate,
+    cast(ptf_idx.amount_position as double)             as amount_position,
+    cast(ptf_idx.amount_position * coalesce(xrt.rt_val, 1) as double) as amount_position_base_ccy,
+    cast(
+        {{ safe_divide(
+            'ptf_idx.amount_position',
+            'sum(ptf_idx.amount_position) over (partition by ptf_idx.client_id, ptf_idx.dt_fct)'
+        ) }}
+    as double)                                          as weight_pct
 
 from ptf_idx
-inner join {{ ref('st0_fct_xrt') }} xrt_rates
-    on ptf_idx.currency = xrt_rates.CD_CCY
-    and xrt_rates.DT_FCT = (
-        select max(x2.DT_FCT)
+left join cli
+    on ptf_idx.client_id = cli.client_id
+    and ptf_idx.dt_fct   = cli.dt_fct
+left join ptf
+    on ptf_idx.ptf_id  = ptf.ptf_id
+    and ptf_idx.dt_fct = ptf.dt_fct
+left join ins
+    on ptf_idx.asset_id = ins.ins_id
+left join xrt
+    on ptf_idx.currency = xrt.cd_ccy
+    and xrt.dt_fct = (
+        select max(x2.dt_fct)
         from {{ ref('st0_fct_xrt') }} x2
-        where x2.CD_CCY = ptf_idx.currency
-          and x2.DT_FCT <= ptf_idx.dt_fct
+        where x2.cd_ccy    = ptf_idx.currency
+          and x2.dt_fct   <= ptf_idx.dt_fct
     )
-
-group by
-    ptf_idx.dt_fct,
-    ptf_idx.client_id,
-    ptf_idx.asset_id,
-    ptf_idx.currency,
-    xrt_rates.rt_val,
-    ptf_idx.amount_position

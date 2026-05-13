@@ -62,6 +62,77 @@ models:
                 min_value: 0
                 max_value: 1
                 strictly: false
+      - name: client_name
+        description: "Nom complet du client"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: client_category
+        description: "Code de la catégorie client (PRIVATE, RETAIL)"
+        data_type: varchar
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['PRIVATE', 'RETAIL']
+      - name: client_category_name
+        description: "Libellé de la catégorie client"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: country
+        description: "Code du pays de domicile (ISO 3166)"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: country_name
+        description: "Libellé du pays"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: ptf_id
+        description: "Identifiant unique du portefeuille"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: ptf_name
+        description: "Libellé du portefeuille"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: manager_id
+        description: "Identifiant du gestionnaire du portefeuille"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: manager_name
+        description: "Nom du gestionnaire"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: risk_profile
+        description: "Code du profil de risque (GROWTH, BALANCED, CONSERV)"
+        data_type: varchar
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['GROWTH', 'BALANCED', 'CONSERV']
+      - name: risk_profile_name
+        description: "Libellé du profil de risque"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: asset_name
+        description: "Libellé de l'actif / instrument"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: asset_class
+        description: "Classe d'actif (EQUITY, BOND, CASH, etc.)"
+        data_type: varchar
+        tests:
+          - not_null
 
   - name: mart_portfolio_performance
     description: "Performance des portefeuilles avec valorisation FX. Une ligne par portefeuille, actif et date."
