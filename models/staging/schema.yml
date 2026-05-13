@@ -403,17 +403,13 @@ models:
   - name: stg_ccy
     description: "Devises supportées par l'institution. Une ligne par devise."
     columns:
-      - name: currency_code
+      - name: currency_id
         description: "Code unique de la devise (USD, EUR, CHF, GBP)"
         tests:
           - not_null
           - unique
       - name: currency_name
         description: "Libellé de la devise"
-        tests:
-          - not_null
-      - name: is_base
-        description: "Indicateur de devise de référence (true/false)"
         tests:
           - not_null
       - name: loaded_at
@@ -424,17 +420,13 @@ models:
   - name: stg_cty
     description: "Pays de domicile des clients. Une ligne par pays."
     columns:
-      - name: country_code
+      - name: country_id
         description: "Code unique du pays (ISO 3166)"
         tests:
           - not_null
           - unique
       - name: country_name
         description: "Libellé du pays"
-        tests:
-          - not_null
-      - name: region_code
-        description: "Code de la région géographique"
         tests:
           - not_null
       - name: loaded_at
@@ -445,19 +437,11 @@ models:
   - name: stg_prf
     description: "Profils de risque des portefeuilles. Une ligne par profil."
     columns:
-      - name: profile_code
+      - name: risk_profile_id
         description: "Code unique du profil de risque (GROWTH, BALANCED, CONSERV)"
         tests:
           - not_null
           - unique
-      - name: profile_name
-        description: "Libellé du profil de risque"
-        tests:
-          - not_null
-      - name: risk_score
-        description: "Score de risque (1-10)"
-        tests:
-          - not_null
       - name: loaded_at
         description: "Horodatage de chargement en staging"
         tests:
@@ -466,17 +450,13 @@ models:
   - name: stg_cli_cat
     description: "Catégories clients (PRIVATE, RETAIL). Une ligne par catégorie."
     columns:
-      - name: category_code
+      - name: client_category_id
         description: "Code unique de la catégorie client (PRIVATE, RETAIL)"
         tests:
           - not_null
           - unique
-      - name: category_name
+      - name: client_category_name
         description: "Libellé de la catégorie client"
-        tests:
-          - not_null
-      - name: min_aum
-        description: "AUM minimum requis pour cette catégorie"
         tests:
           - not_null
       - name: loaded_at
