@@ -49,6 +49,9 @@ sources:
           - name: ts_stg
             description: "Horodatage de chargement en staging"
 
+      - name: st0_ope_typ
+        description: "Types d'opérations avec flags NNM, intérêts, prêts"
+
       - name: st0_fct_ope
         description: "Transactions financières brutes. Une ligne par opération."
         columns:
@@ -189,5 +192,53 @@ sources:
             description: "Montant du mouvement en devise de référence"
           - name: cd_ccy_mvt
             description: "Code devise du mouvement"
+          - name: ts_stg
+            description: "Horodatage de chargement en staging"
+
+      - name: st0_ccy
+        description: "Référentiel des devises supportées. Une ligne par devise."
+        columns:
+          - name: cd_ccy
+            description: "Code unique de la devise (USD, EUR, CHF, GBP)"
+          - name: lb_ccy
+            description: "Libellé de la devise"
+          - name: is_base
+            description: "Indicateur de devise de référence (Y/N)"
+          - name: ts_stg
+            description: "Horodatage de chargement en staging"
+
+      - name: st0_cty
+        description: "Référentiel des pays. Une ligne par pays."
+        columns:
+          - name: cd_cty
+            description: "Code unique du pays (ISO 3166)"
+          - name: lb_cty
+            description: "Libellé du pays"
+          - name: cd_rg
+            description: "Code de la région géographique"
+          - name: ts_stg
+            description: "Horodatage de chargement en staging"
+
+      - name: st0_prf
+        description: "Référentiel des profils de risque. Une ligne par profil."
+        columns:
+          - name: cd_prf
+            description: "Code unique du profil de risque (GROWTH, BALANCED, CONSERV)"
+          - name: lb_prf
+            description: "Libellé du profil de risque"
+          - name: sc_ris
+            description: "Score de risque (1-10)"
+          - name: ts_stg
+            description: "Horodatage de chargement en staging"
+
+      - name: st0_cli_cat
+        description: "Référentiel des catégories clients. Une ligne par catégorie."
+        columns:
+          - name: cd_cli_cat
+            description: "Code unique de la catégorie client (PRIVATE, RETAIL)"
+          - name: lb_cli_cat
+            description: "Libellé de la catégorie client"
+          - name: min_aum
+            description: "AUM minimum requis pour cette catégorie"
           - name: ts_stg
             description: "Horodatage de chargement en staging"
