@@ -35,7 +35,7 @@ daily_aum as (
         ptf.risk_profile,
         ptf.risk_profile_name,
         current_date                as performance_date,
-        sum(ptf_idx.amount_position) as aum
+        sum(ptf_idx.amount_position_ref) as aum
     from ptf_idx
     inner join ptf on ptf_idx.ptf_id    = ptf.ptf_id
                   and ptf_idx.client_id = ptf.client_id

@@ -113,7 +113,7 @@ models:
                 to: ref('stg_ptf')
                 field: ptf_id
       - name: asset_id
-        description: "Identifiant de l'asset (titre, instrument)"
+        description: "Identifiant de l'asset"
         tests:
           - not_null
       - name: currency
@@ -130,8 +130,23 @@ models:
           - accepted_values:
               arguments:
                 values: ['BUY', 'SELL']
+      - name: debit_credit
+        description: "Sens de l'opération : D (débit/achat) ou C (crédit/vente)"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['D', 'C']
+      - name: pos_id
+        description: "Identifiant de la position concernée"
+        tests:
+          - not_null
       - name: accounting_date
         description: "Date comptable de l'opération"
+        tests:
+          - not_null
+      - name: execution_date
+        description: "Date d'exécution de l'opération"
         tests:
           - not_null
       - name: value_date
@@ -143,15 +158,31 @@ models:
         tests:
           - not_null
       - name: amount
-        description: "Montant brut de l'opération en devise locale"
+        description: "Montant brut en devise locale"
         tests:
           - not_null
       - name: amount_ref
-        description: "Montant en devise de référence"
+        description: "Montant brut en devise de référence"
+        tests:
+          - not_null
+      - name: amount_ptf
+        description: "Montant brut en devise du portefeuille"
+        tests:
+          - not_null
+      - name: amount_net
+        description: "Montant net en devise locale (après frais)"
+        tests:
+          - not_null
+      - name: amount_net_ref
+        description: "Montant net en devise de référence"
+        tests:
+          - not_null
+      - name: amount_net_ptf
+        description: "Montant net en devise du portefeuille"
         tests:
           - not_null
       - name: is_provisional
-        description: "Indicateur d'opération provisoire (non définitivement comptabilisée)"
+        description: "Indicateur d'opération provisoire"
       - name: loaded_at
         description: "Date de chargement en staging"
 
@@ -222,31 +253,75 @@ models:
         tests:
           - not_null
       - name: mt_aci_ref
-        description: "Actif net corrigé des intérêts courus en devise de référence"
+        description: "Intérêts courus en devise de référence"
         tests:
           - not_null
       - name: mt_lia_ref
         description: "Passif en devise de référence"
         tests:
           - not_null
+      - name: mt_net_ptf
+        description: "Actif net en devise du portefeuille"
+        tests:
+          - not_null
+      - name: mt_aci_ptf
+        description: "Intérêts courus en devise du portefeuille"
+        tests:
+          - not_null
+      - name: mt_lia_ptf
+        description: "Passif en devise du portefeuille"
+        tests:
+          - not_null
+      - name: pc_ptf
+        description: "Poids du portefeuille dans l'AUM total (0 à 1)"
+        tests:
+          - not_null
       - name: mt_pnl_ref
-        description: "Résultat (P&L) en devise de référence"
+        description: "P&L en devise de référence"
         tests:
           - not_null
-      - name: mt_inc_ref_mtd
-        description: "Flux entrants MTD en devise de référence"
+      - name: mt_pnl_ptf
+        description: "P&L en devise du portefeuille"
         tests:
           - not_null
-      - name: mt_out_ref_mtd
-        description: "Flux sortants MTD en devise de référence"
+      - name: mt_pnl_cli
+        description: "P&L en devise du client"
         tests:
           - not_null
-      - name: mt_nnm_inc_ref_mtd
-        description: "NNM entrant MTD en devise de référence"
+      - name: mt_pnc_ref
+        description: "Variation nette en devise de référence"
         tests:
           - not_null
-      - name: mt_nnm_out_ref_mtd
-        description: "NNM sortant MTD en devise de référence"
+      - name: mt_pnc_ptf
+        description: "Variation nette en devise du portefeuille"
+        tests:
+          - not_null
+      - name: mt_pnc_cli
+        description: "Variation nette en devise du client"
+        tests:
+          - not_null
+      - name: mt_inc_ref
+        description: "Flux entrants en devise de référence"
+        tests:
+          - not_null
+      - name: mt_out_ref
+        description: "Flux sortants en devise de référence"
+        tests:
+          - not_null
+      - name: mt_nnm_inc_ref
+        description: "NNM entrant en devise de référence"
+        tests:
+          - not_null
+      - name: mt_nnm_out_ref
+        description: "NNM sortant en devise de référence"
+        tests:
+          - not_null
+      - name: mt_int_inc_ref
+        description: "Flux d'intérêts entrants en devise de référence"
+        tests:
+          - not_null
+      - name: mt_int_out_ref
+        description: "Flux d'intérêts sortants en devise de référence"
         tests:
           - not_null
       - name: loaded_at
@@ -280,6 +355,18 @@ models:
           - not_null
       - name: mvt_typ_id
         description: "Type de mouvement"
+        tests:
+          - not_null
+      - name: mvt_res_id
+        description: "Type de résolution du mouvement (ex : CSH pour cash settlement)"
+        tests:
+          - not_null
+      - name: pos_id
+        description: "Position concernée par le mouvement"
+        tests:
+          - not_null
+      - name: is_external
+        description: "Flag mouvement externe (Y/N)"
         tests:
           - not_null
       - name: value_date
@@ -347,6 +434,34 @@ models:
           - not_null
       - name: amount
         description: "Valorisation de la position en devise locale"
+        tests:
+          - not_null
+      - name: amount_ptf
+        description: "Valorisation en devise du portefeuille"
+        tests:
+          - not_null
+      - name: amount_cli
+        description: "Valorisation en devise du client"
+        tests:
+          - not_null
+      - name: amount_ref
+        description: "Valorisation en devise de référence — source unique pour les calculs AUM cross-currency"
+        tests:
+          - not_null
+      - name: accrued_interest_ref
+        description: "Intérêts courus en devise de référence"
+        tests:
+          - not_null
+      - name: pnl_ref
+        description: "P&L de la période en devise de référence"
+        tests:
+          - not_null
+      - name: net_change_ref
+        description: "Variation nette de la position en devise de référence"
+        tests:
+          - not_null
+      - name: weight_ptf
+        description: "Poids de la position dans le portefeuille (RT_PRM)"
         tests:
           - not_null
       - name: value_date

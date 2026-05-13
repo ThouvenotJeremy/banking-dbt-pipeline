@@ -19,7 +19,10 @@ select
     fct_ast.asset_id,
     fct_ast.quantity,
     fct_ast.amount_position,
-    fct_ast.currency as pos_currency
+    fct_ast.amount_position_ref,
+    fct_ast.pnl_ref,
+    fct_ast.weight_ptf,
+    fct_ast.currency        as pos_currency
 from calendar
 inner join ptf on calendar.dt_fct = ptf.dt_fct
 inner join fct_ast

@@ -132,7 +132,31 @@ models:
         tests:
           - not_null
       - name: amount_position
-        description: "Valorisation de la position en devise locale"
+        description: "Valorisation en devise locale"
+        tests:
+          - not_null
+      - name: amount_position_ref
+        description: "Valorisation en devise de référence — utiliser pour tous les calculs AUM cross-currency"
+        tests:
+          - not_null
+      - name: amount_position_ptf
+        description: "Valorisation en devise du portefeuille"
+        tests:
+          - not_null
+      - name: accrued_interest_ref
+        description: "Intérêts courus en devise de référence"
+        tests:
+          - not_null
+      - name: pnl_ref
+        description: "P&L de la période en devise de référence"
+        tests:
+          - not_null
+      - name: net_change_ref
+        description: "Variation nette de la position en devise de référence"
+        tests:
+          - not_null
+      - name: weight_ptf
+        description: "Poids de la position dans le portefeuille"
         tests:
           - not_null
       - name: value_date
@@ -175,7 +199,19 @@ models:
         tests:
           - not_null
       - name: amount_position
-        description: "Valorisation de la position en devise locale"
+        description: "Valorisation en devise locale"
+        tests:
+          - not_null
+      - name: amount_position_ref
+        description: "Valorisation en devise de référence — utiliser pour les agrégations AUM"
+        tests:
+          - not_null
+      - name: pnl_ref
+        description: "P&L de la période en devise de référence"
+        tests:
+          - not_null
+      - name: weight_ptf
+        description: "Poids de la position dans le portefeuille"
         tests:
           - not_null
       - name: pos_currency
