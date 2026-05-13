@@ -11,16 +11,13 @@
 with ptf_idx as (
     select * from {{ ref('int_ptf_idx') }}
 ),
-
 cli as (
     select * from {{ ref('int_cli') }}
 ),
-
 ptf as (
     select * from {{ ref('int_ptf') }}
 ),
 
--- Daily AUM aggregation with forward-filled positions
 daily_aum as (
     select
         ptf_idx.dt_fct,
@@ -29,16 +26,22 @@ daily_aum as (
         ptf.ptf_name,
         cli.client_name,
         cli.client_category,
-        cli.currency as client_currency,
-        sum(ptf_idx.amount_position) as aum,
-        current_date as performance_date,
-        current_timestamp as loaded_at
+        cli.client_category_name,
+        cli.country,
+        cli.country_name,
+        cli.currency                as client_currency,
+        ptf.manager_id,
+        ptf.manager_name,
+        ptf.risk_profile,
+        ptf.risk_profile_name,
+        current_date                as performance_date,
+        sum(ptf_idx.amount_position) as aum
     from ptf_idx
-    inner join ptf on ptf_idx.ptf_id = ptf.ptf_id
-        and ptf_idx.client_id = ptf.client_id
-        and ptf_idx.dt_fct = ptf.dt_fct
+    inner join ptf on ptf_idx.ptf_id    = ptf.ptf_id
+                  and ptf_idx.client_id = ptf.client_id
+                  and ptf_idx.dt_fct    = ptf.dt_fct
     inner join cli on ptf_idx.client_id = cli.client_id
-        and cli.dt_fct = ptf_idx.dt_fct
+                  and ptf_idx.dt_fct    = cli.dt_fct
     group by
         ptf_idx.dt_fct,
         ptf_idx.client_id,
@@ -46,12 +49,17 @@ daily_aum as (
         ptf.ptf_name,
         cli.client_name,
         cli.client_category,
+        cli.client_category_name,
+        cli.country,
+        cli.country_name,
         cli.currency,
-        current_date,
-        current_timestamp
+        ptf.manager_id,
+        ptf.manager_name,
+        ptf.risk_profile,
+        ptf.risk_profile_name,
+        current_date
 ),
 
--- YTD calculation
 ytd_calculation as (
     select
         current_aum.dt_fct,
@@ -60,20 +68,27 @@ ytd_calculation as (
         current_aum.ptf_name,
         current_aum.client_name,
         current_aum.client_category,
+        current_aum.client_category_name,
+        current_aum.country,
+        current_aum.country_name,
         current_aum.client_currency,
-        current_aum.aum as aum_current,
-        ytd_start.aum as aum_ytd_start,
+        current_aum.manager_id,
+        current_aum.manager_name,
+        current_aum.risk_profile,
+        current_aum.risk_profile_name,
+        current_aum.aum             as aum_current,
+        ytd_start.aum               as aum_ytd_start,
         case
             when ytd_start.aum is null or ytd_start.aum = 0 then 0
             else ((current_aum.aum - ytd_start.aum) / ytd_start.aum) * 100
-        end as aum_ytd_variation_pct,
+        end                         as aum_ytd_variation_pct,
         current_aum.aum - coalesce(ytd_start.aum, 0) as aum_ytd_variation_abs,
         current_aum.performance_date,
-        current_aum.loaded_at
+        current_timestamp           as loaded_at
     from daily_aum current_aum
     left join daily_aum ytd_start
-        on current_aum.client_id = ytd_start.client_id
-        and current_aum.ptf_id = ytd_start.ptf_id
+        on  current_aum.client_id = ytd_start.client_id
+        and current_aum.ptf_id    = ytd_start.ptf_id
         and ytd_start.dt_fct = (
             select min(dt_fct)
             from {{ ref('stg_set_cal') }}
@@ -88,7 +103,14 @@ select
     ptf_name,
     client_name,
     client_category,
+    client_category_name,
+    country,
+    country_name,
     client_currency,
+    manager_id,
+    manager_name,
+    risk_profile,
+    risk_profile_name,
     aum_current,
     aum_ytd_start,
     aum_ytd_variation_pct,
