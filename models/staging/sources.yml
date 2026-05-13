@@ -242,3 +242,63 @@ sources:
             description: "AUM minimum requis pour cette catégorie"
           - name: ts_stg
             description: "Horodatage de chargement en staging"
+
+      - name: st0_agn
+        description: "Agents de distribution. Une ligne par agent."
+        columns:
+          - name: cd_agn
+            description: "Code unique de l'agent"
+          - name: lb_agn
+            description: "Nom de l'agent"
+          - name: ts_stg
+            description: "Horodatage de chargement"
+
+      - name: st0_buu
+        description: "Business units. Une ligne par unité."
+        columns:
+          - name: cd_buu
+            description: "Code unique de la business unit"
+          - name: lb_buu
+            description: "Nom de la business unit"
+          - name: ts_stg
+            description: "Horodatage de chargement"
+
+      - name: st0_ent
+        description: "Entités juridiques. Une ligne par entité."
+        columns:
+          - name: cd_ent
+            description: "Code unique de l'entité"
+          - name: lb_ent
+            description: "Nom de l'entité juridique"
+          - name: ts_stg
+            description: "Horodatage de chargement"
+
+      - name: st0_mng_ext
+        description: "Gestionnaires externes mandatés. Une ligne par gestionnaire."
+        columns:
+          - name: cd_mng_ext
+            description: "Code unique du gestionnaire externe"
+          - name: lb_mng_ext
+            description: "Nom du gestionnaire externe"
+          - name: ts_stg
+            description: "Horodatage de chargement"
+
+      - name: st0_mng_grp
+        description: "Groupes de managers. Une ligne par groupe."
+        columns:
+          - name: cd_mng_grp
+            description: "Code unique du groupe"
+          - name: lb_mng_grp
+            description: "Nom du groupe"
+          - name: ts_stg
+            description: "Horodatage de chargement"
+
+      - name: st0_ins_grp
+        description: "Groupes d'instruments financiers. Une ligne par groupe."
+        columns:
+          - name: cd_ins_grp
+            description: "Code unique du groupe d'instruments"
+          - name: lb_ins_grp
+            description: "Nom du groupe"
+          - name: ts_stg
+            description: "Horodatage de chargement"

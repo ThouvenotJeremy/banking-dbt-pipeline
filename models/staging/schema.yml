@@ -13,6 +13,8 @@ models:
         description: "Nom complet du client"
         tests:
           - not_null
+      - name: client_name_alt
+        description: "Nom alternatif du client (format NOM Prénom)"
       - name: client_category
         description: "Catégorie du client : PRIVATE ou RETAIL"
         tests:
@@ -31,6 +33,8 @@ models:
         description: "Pays de domicile"
         tests:
           - not_null
+      - name: nationality
+        description: "Pays de nationalité (peut différer du domicile)"
       - name: relationship_manager_id
         description: "RM responsable du client"
         tests:
@@ -56,6 +60,8 @@ models:
         description: "Libellé du portefeuille"
         tests:
           - not_null
+      - name: ptf_name_alt
+        description: "Libellé alternatif du portefeuille (format court)"
       - name: client_id
         description: "Client propriétaire du portefeuille"
         tests:
@@ -80,6 +86,18 @@ models:
                 values: ['GROWTH', 'BALANCED', 'CONSERV']
       - name: manager_id
         description: "RM gestionnaire du portefeuille"
+        tests:
+          - not_null
+      - name: ext_manager_id
+        description: "Gestionnaire externe mandaté (null si gérance interne)"
+      - name: agent_id
+        description: "Agent de distribution rattaché au portefeuille"
+      - name: entity_id
+        description: "Entité juridique de rattachement du portefeuille"
+        tests:
+          - not_null
+      - name: business_unit_id
+        description: "Business unit responsable du portefeuille"
         tests:
           - not_null
       - name: opening_date
@@ -576,5 +594,106 @@ models:
           - not_null
       - name: loaded_at
         description: "Horodatage de chargement en staging"
+        tests:
+          - not_null
+  - name: stg_agn
+    description: "Agents de distribution rattachés aux portefeuilles."
+    columns:
+      - name: agent_id
+        description: "Identifiant unique de l'agent"
+        tests:
+          - not_null
+          - unique
+      - name: agent_name
+        description: "Nom de l'agent"
+        tests:
+          - not_null
+      - name: loaded_at
+        description: "Horodatage de chargement"
+        tests:
+          - not_null
+
+  - name: stg_buu
+    description: "Business units de la banque."
+    columns:
+      - name: business_unit_id
+        description: "Identifiant unique de la business unit"
+        tests:
+          - not_null
+          - unique
+      - name: business_unit_name
+        description: "Nom de la business unit"
+        tests:
+          - not_null
+      - name: loaded_at
+        description: "Horodatage de chargement"
+        tests:
+          - not_null
+
+  - name: stg_ent
+    description: "Entités juridiques de la banque."
+    columns:
+      - name: entity_id
+        description: "Identifiant unique de l'entité"
+        tests:
+          - not_null
+          - unique
+      - name: entity_name
+        description: "Nom de l'entité juridique"
+        tests:
+          - not_null
+      - name: loaded_at
+        description: "Horodatage de chargement"
+        tests:
+          - not_null
+
+  - name: stg_mng_ext
+    description: "Gestionnaires externes mandatés sur certains portefeuilles."
+    columns:
+      - name: ext_manager_id
+        description: "Identifiant unique du gestionnaire externe"
+        tests:
+          - not_null
+          - unique
+      - name: ext_manager_name
+        description: "Nom du gestionnaire externe"
+        tests:
+          - not_null
+      - name: loaded_at
+        description: "Horodatage de chargement"
+        tests:
+          - not_null
+
+  - name: stg_mng_grp
+    description: "Groupes / équipes des relationship managers."
+    columns:
+      - name: manager_group_id
+        description: "Identifiant unique du groupe"
+        tests:
+          - not_null
+          - unique
+      - name: manager_group_name
+        description: "Nom du groupe"
+        tests:
+          - not_null
+      - name: loaded_at
+        description: "Horodatage de chargement"
+        tests:
+          - not_null
+
+  - name: stg_ins_grp
+    description: "Groupes d'instruments financiers (EQU, CSH, BND)."
+    columns:
+      - name: ins_grp_id
+        description: "Identifiant unique du groupe d'instruments"
+        tests:
+          - not_null
+          - unique
+      - name: ins_grp_name
+        description: "Libellé du groupe"
+        tests:
+          - not_null
+      - name: loaded_at
+        description: "Horodatage de chargement"
         tests:
           - not_null
