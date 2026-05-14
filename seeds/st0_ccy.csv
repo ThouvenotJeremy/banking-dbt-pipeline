@@ -1,5 +1,9 @@
-CD_CCY,LB_CCY,TS_STG
-USD,US Dollar,2024-01-01
-CHF,Swiss Franc,2024-01-01
-EUR,Euro,2024-01-01
-GBP,British Pound,2024-01-01
+CD_CCY,LB_CCY
+CHF,Franc Suisse
+USD,Dollar Américain
+EUR,Euro
+GBP,Livre Sterling
+JPY,Yen Japonais
+SEK,Couronne Suédoise
+NOK,Couronne Norvégienne
+DKK,Couronne Danoise

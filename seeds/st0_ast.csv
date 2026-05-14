@@ -1,0 +1,15 @@
+CD_AST,LB_AST,TT_AST,CD_RAT
+AAPL,Apple Inc,Société technologique américaine spécialisée dans les appareils électroniques et logiciels.,
+MSFT,Microsoft Corp,Leader mondial des logiciels professionnels et services cloud.,
+NESN,Nestlé SA,Multinationale suisse de l'alimentation et des boissons.,
+UBSG,UBS Group AG,Principal établissement bancaire suisse offrant des services de gestion de fortune.,
+NOVN,Novartis AG,Groupe pharmaceutique suisse spécialisé dans les médicaments innovants.,
+GOOGL,Alphabet Inc,Conglomérat technologique américain propriétaire de Google.,
+AMZN,Amazon.com Inc,Géant américain du commerce en ligne et des services cloud.,
+LQD,iShares iBoxx $ Investment Grade Corporate Bond ETF,ETF obligataire américain investment grade.,AAA
+CASH_CHF,Liquidités CHF,Position de trésorerie en francs suisses.,AAA
+CASH_USD,Liquidités USD,Position de trésorerie en dollars américains.,AAA
+CASH_EUR,Liquidités EUR,Position de trésorerie en euros.,AAA
+US10Y,US Treasury 10Y,Obligation d'État américaine à 10 ans.,AAA
+CH10Y,Swiss Confederation 10Y,Obligation de la Confédération suisse à 10 ans.,AAA
+DE10Y,German Bund 10Y,Obligation d'État allemande à 10 ans.,AAA

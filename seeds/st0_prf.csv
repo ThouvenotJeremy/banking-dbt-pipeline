@@ -1,4 +1,6 @@
-CD_PRF,LB_PRF,TS_STG
-GROWTH,Profil Croissance,2024-01-01
-BALANCED,Profil Équilibré,2024-01-01
-CONSERV,Profil Conservateur,2024-01-01
+CD_PRF,LB_PRF
+GROWTH,Croissance
+BALANCED,Équilibré
+CONSERV,Conservateur
+DYNAMIC,Dynamique
+INCOME,Revenu

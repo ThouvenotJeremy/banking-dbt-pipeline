@@ -2,112 +2,172 @@ version: 2
 
 models:
   - name: stg_cli
-    description: "Clients extraits du core banking. Une ligne par client actif."
+    description: "Clients en état courant avec métadonnées techniques STG. Une ligne par client actif. Modèle incrémental — nouveaux clients ajoutés à chaque run, clients existants mis à jour."
+    config:
+      materialized: incremental
     columns:
-      - name: client_id
-        description: "Identifiant unique du client"
+      - name: id_stg_cli
+        description: "Identifiant technique unique séquentiel. Stable pour un client donné entre les runs."
         tests:
           - not_null
           - unique
-      - name: client_name
+      - name: ts_stg
+        description: "Timestamp de chargement du record en staging"
+        tests:
+          - not_null
+      - name: vr_stg
+        description: "Version au format YYYYMMDD dérivée de ts_stg"
+        tests:
+          - not_null
+      - name: id_obj_tec
+        description: "Identifiant de l'objet technique (1001 = table client)"
+        tests:
+          - not_null
+      - name: cd_src
+        description: "Source des données (st0_cli)"
+        tests:
+          - not_null
+      - name: cd_pid
+        description: "Identifiant unique de l'exécution dbt (invocation_id)"
+        tests:
+          - not_null
+      - name: lb_dsc
+        description: "Description libre (null par défaut)"
+      - name: cd_cli_src
+        description: "Code client dans le système source"
+        tests:
+          - not_null
+      - name: cd_cli
+        description: "Code unique du client"
+        tests:
+          - not_null
+          - unique
+      - name: lb_cli
         description: "Nom complet du client"
         tests:
           - not_null
-      - name: client_name_alt
-        description: "Nom alternatif du client (format NOM Prénom)"
-      - name: client_category
-        description: "Catégorie du client : PRIVATE ou RETAIL"
+      - name: lb_cli_alt
+        description: "Nom alternatif du client"
+      - name: dt_cre
+        description: "Date de création du client"
+        tests:
+          - not_null
+      - name: dt_clo
+        description: "Date de clôture (null si actif)"
+      - name: cd_cty_dom
+        description: "Pays de domicile"
+        tests:
+          - not_null
+      - name: cd_cty_nat
+        description: "Pays de nationalité"
+      - name: cd_mng_rel
+        description: "Relationship manager responsable"
+        tests:
+          - not_null
+      - name: cd_cli_cat
+        description: "Catégorie client (PRIVATE, RETAIL)"
         tests:
           - not_null
           - accepted_values:
               arguments:
                 values: ['PRIVATE', 'RETAIL']
-      - name: currency
+      - name: cd_ccy
         description: "Devise de référence du client"
         tests:
           - not_null
           - accepted_values:
               arguments:
                 values: ['USD', 'CHF', 'EUR', 'GBP']
-      - name: country
-        description: "Pays de domicile"
-        tests:
-          - not_null
-      - name: nationality
-        description: "Pays de nationalité (peut différer du domicile)"
-      - name: relationship_manager_id
-        description: "RM responsable du client"
-        tests:
-          - not_null
-      - name: opening_date
-        description: "Date d'ouverture du client"
-        tests:
-          - not_null
-      - name: closing_date
-        description: "Date de clôture du client (null si actif)"
-      - name: loaded_at
-        description: "Horodatage de chargement en staging"
 
   - name: stg_ptf
-    description: "Portefeuilles extraits du core banking. Une ligne par portefeuille actif."
+    description: "Portefeuilles en état courant avec métadonnées techniques STG. Une ligne par portefeuille. Modèle incrémental."
+    config:
+      materialized: incremental
     columns:
-      - name: ptf_id
-        description: "Identifiant unique du portefeuille"
+      - name: id_stg_ptf
+        description: "Identifiant technique unique séquentiel"
         tests:
           - not_null
           - unique
-      - name: ptf_name
+      - name: ts_stg
+        description: "Timestamp de chargement"
+        tests:
+          - not_null
+      - name: vr_stg
+        description: "Version YYYYMMDD"
+        tests:
+          - not_null
+      - name: id_obj_tec
+        description: "Identifiant objet technique (1002 = portefeuille)"
+        tests:
+          - not_null
+      - name: cd_src
+        description: "Source des données"
+        tests:
+          - not_null
+      - name: cd_pid
+        description: "Identifiant d'exécution dbt"
+        tests:
+          - not_null
+      - name: lb_dsc
+        description: "Description libre"
+      - name: id_ptf_tec_typ
+        description: "Type technique du portefeuille (1 = standard)"
+        tests:
+          - not_null
+      - name: cd_ptf_src
+        description: "Code portefeuille dans le système source"
+        tests:
+          - not_null
+      - name: cd_ptf
+        description: "Code unique du portefeuille"
+        tests:
+          - not_null
+          - unique
+      - name: lb_ptf
         description: "Libellé du portefeuille"
         tests:
           - not_null
-      - name: ptf_name_alt
-        description: "Libellé alternatif du portefeuille (format court)"
-      - name: client_id
-        description: "Client propriétaire du portefeuille"
+      - name: lb_ptf_alt
+        description: "Libellé alternatif"
+      - name: dt_cre
+        description: "Date d'ouverture"
+        tests:
+          - not_null
+      - name: dt_clo
+        description: "Date de clôture (null si actif)"
+      - name: cd_cli
+        description: "Client propriétaire"
         tests:
           - not_null
           - relationships:
               arguments:
                 to: ref('stg_cli')
-                field: client_id
-      - name: currency
-        description: "Devise de référence du portefeuille"
+                field: cd_cli
+      - name: cd_ccy
+        description: "Devise de référence"
         tests:
           - not_null
-          - accepted_values:
-              arguments:
-                values: ['USD', 'CHF', 'EUR', 'GBP']
-      - name: risk_profile
-        description: "Profil de risque : GROWTH, BALANCED, CONSERV"
+      - name: cd_prf
+        description: "Profil de risque"
         tests:
           - not_null
-          - accepted_values:
-              arguments:
-                values: ['GROWTH', 'BALANCED', 'CONSERV']
-      - name: manager_id
-        description: "RM gestionnaire du portefeuille"
+      - name: cd_mng
+        description: "Relationship manager"
         tests:
           - not_null
-      - name: ext_manager_id
-        description: "Gestionnaire externe mandaté (null si gérance interne)"
-      - name: agent_id
-        description: "Agent de distribution rattaché au portefeuille"
-      - name: entity_id
-        description: "Entité juridique de rattachement du portefeuille"
+      - name: cd_mng_ext
+        description: "Gestionnaire externe"
+      - name: cd_agn
+        description: "Agent de distribution"
+      - name: cd_ent
+        description: "Entité juridique"
         tests:
           - not_null
-      - name: business_unit_id
-        description: "Business unit responsable du portefeuille"
+      - name: cd_buu
+        description: "Business unit"
         tests:
           - not_null
-      - name: opening_date
-        description: "Date d'ouverture du portefeuille"
-        tests:
-          - not_null
-      - name: closing_date
-        description: "Date de clôture du portefeuille (null si actif)"
-      - name: loaded_at
-        description: "Horodatage de chargement en staging"
 
   - name: stg_fct_ope
     description: "Opérations financières brutes. Une ligne par opération."
@@ -205,46 +265,111 @@ models:
         description: "Date de chargement en staging"
 
   - name: stg_mng
-    description: "Relationship Managers extraits du core banking. Une ligne par manager."
+    description: "Relationship managers avec métadonnées techniques STG. Modèle incrémental."
+    config:
+      materialized: incremental
     columns:
-      - name: manager_id
-        description: "Identifiant unique du manager"
+      - name: id_stg_mng
+        description: "Identifiant technique unique séquentiel"
         tests:
           - not_null
           - unique
-      - name: manager_name
+      - name: ts_stg
+        description: "Timestamp de chargement"
+        tests:
+          - not_null
+      - name: vr_stg
+        description: "Version YYYYMMDD"
+        tests:
+          - not_null
+      - name: id_obj_tec
+        description: "Identifiant objet technique (1012 = manager)"
+        tests:
+          - not_null
+      - name: cd_src
+        description: "Source des données"
+        tests:
+          - not_null
+      - name: cd_pid
+        description: "Identifiant d'exécution dbt"
+        tests:
+          - not_null
+      - name: lb_dsc
+        description: "Description libre"
+      - name: cd_mng_src
+        description: "Code manager dans le système source"
+        tests:
+          - not_null
+      - name: cd_mng
+        description: "Code unique du manager"
+        tests:
+          - not_null
+          - unique
+      - name: lb_mng
         description: "Nom complet du manager"
         tests:
           - not_null
-      - name: manager_group_id
-        description: "Groupe / équipe du manager"
+      - name: cd_mng_grp
+        description: "Groupe d'appartenance du manager"
         tests:
           - not_null
-      - name: timestamp
-        description: "Horodatage de chargement en staging"
-        tests:
-          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_mng_grp')
+                field: cd_mng_grp
 
   - name: stg_ins
-    description: "Instruments financiers extraits du core banking. Une ligne par instrument."
+    description: "Instruments financiers avec métadonnées techniques STG. Modèle incrémental."
+    config:
+      materialized: incremental
     columns:
-      - name: ins_id
-        description: "Identifiant unique de l'instrument"
+      - name: id_stg_ins
+        description: "Identifiant technique unique séquentiel"
         tests:
           - not_null
           - unique
-      - name: ins_name
+      - name: ts_stg
+        description: "Timestamp de chargement"
+        tests:
+          - not_null
+      - name: vr_stg
+        description: "Version YYYYMMDD"
+        tests:
+          - not_null
+      - name: id_obj_tec
+        description: "Identifiant objet technique (1010 = instrument)"
+        tests:
+          - not_null
+      - name: cd_src
+        description: "Source des données"
+        tests:
+          - not_null
+      - name: cd_pid
+        description: "Identifiant d'exécution dbt"
+        tests:
+          - not_null
+      - name: lb_dsc
+        description: "Description libre"
+      - name: cd_ins_src
+        description: "Code instrument dans le système source"
+        tests:
+          - not_null
+      - name: cd_ins
+        description: "Code unique de l'instrument"
+        tests:
+          - not_null
+          - unique
+      - name: lb_ins
         description: "Libellé de l'instrument"
         tests:
           - not_null
-      - name: ins_grp_id
-        description: "Groupe d'instruments"
+      - name: cd_ins_grp
+        description: "Groupe d'instruments (EQU, BND, CSH, ETF)"
         tests:
           - not_null
-      - name: loaded_at
-        description: "Date de chargement en staging"
-        tests:
-          - not_null
+          - accepted_values:
+              arguments:
+                values: ['EQU', 'BND', 'CSH', 'ETF']
 
   - name: stg_fct_ptf
     description: "Performance mensuelle des portefeuilles. Une ligne par portefeuille et par date."
@@ -509,191 +634,646 @@ models:
           - not_null
 
   - name: stg_ope_typ
-    description: "Types d'opérations financières. Une ligne par type."
+    description: "Types d'opérations avec métadonnées techniques STG. Modèle incrémental."
+    config:
+      materialized: incremental
     columns:
-      - name: ope_typ_id
-        description: "Code identifiant du type d'opération"
+      - name: id_stg_ope_typ
+        description: "Identifiant technique unique séquentiel"
         tests:
           - not_null
           - unique
-      - name: ope_typ_name
+      - name: ts_stg
+        description: "Timestamp de chargement"
+        tests:
+          - not_null
+      - name: vr_stg
+        description: "Version YYYYMMDD"
+        tests:
+          - not_null
+      - name: id_obj_tec
+        description: "Identifiant objet technique (1015 = type opération)"
+        tests:
+          - not_null
+      - name: cd_src
+        description: "Source des données"
+        tests:
+          - not_null
+      - name: cd_pid
+        description: "Identifiant d'exécution dbt"
+        tests:
+          - not_null
+      - name: lb_dsc
+        description: "Description libre"
+      - name: cd_ope_typ_src
+        description: "Code type opération dans le système source"
+        tests:
+          - not_null
+      - name: cd_ope_typ
+        description: "Code unique du type d'opération"
+        tests:
+          - not_null
+          - unique
+      - name: lb_ope_typ
         description: "Libellé du type d'opération"
         tests:
           - not_null
-      - name: is_nnm
-        description: "Flag Net New Money"
+      - name: yn_nnm
+        description: "Indicateur New Net Money"
         tests:
           - not_null
-      - name: is_interest
-        description: "Flag intérêt"
+          - accepted_values:
+              arguments:
+                values: ['Y', 'N']
+      - name: yn_int
+        description: "Indicateur flux d'intérêts"
         tests:
           - not_null
-      - name: is_loan
-        description: "Flag prêt"
+          - accepted_values:
+              arguments:
+                values: ['Y', 'N']
+      - name: yn_loa
+        description: "Indicateur prêt"
         tests:
           - not_null
+          - accepted_values:
+              arguments:
+                values: ['Y', 'N']
 
   - name: stg_ccy
-    description: "Devises supportées par l'institution. Une ligne par devise."
+    description: "Devises avec métadonnées techniques STG. Modèle incrémental."
+    config:
+      materialized: incremental
     columns:
-      - name: currency_id
-        description: "Code unique de la devise (USD, EUR, CHF, GBP)"
+      - name: id_stg_ccy
+        description: "Identifiant technique unique séquentiel"
         tests:
           - not_null
           - unique
-      - name: currency_name
-        description: "Libellé de la devise"
+      - name: ts_stg
+        description: "Timestamp de chargement"
         tests:
           - not_null
-      - name: loaded_at
-        description: "Horodatage de chargement en staging"
+      - name: vr_stg
+        description: "Version YYYYMMDD"
+        tests:
+          - not_null
+      - name: id_obj_tec
+        description: "Identifiant objet technique (1006 = devise)"
+        tests:
+          - not_null
+      - name: cd_src
+        description: "Source des données"
+        tests:
+          - not_null
+      - name: cd_pid
+        description: "Identifiant d'exécution dbt"
+        tests:
+          - not_null
+      - name: lb_dsc
+        description: "Description libre"
+      - name: cd_ccy_src
+        description: "Code devise dans le système source"
+        tests:
+          - not_null
+      - name: cd_ccy
+        description: "Code ISO 4217 de la devise"
+        tests:
+          - not_null
+          - unique
+          - accepted_values:
+              arguments:
+                values: ['CHF', 'USD', 'EUR', 'GBP', 'JPY', 'SEK', 'NOK', 'DKK']
+      - name: lb_ccy
+        description: "Libellé de la devise"
         tests:
           - not_null
 
   - name: stg_cty
-    description: "Pays de domicile des clients. Une ligne par pays."
+    description: "Pays avec métadonnées techniques STG. Modèle incrémental."
+    config:
+      materialized: incremental
     columns:
-      - name: country_id
-        description: "Code unique du pays (ISO 3166)"
+      - name: id_stg_cty
+        description: "Identifiant technique unique séquentiel"
         tests:
           - not_null
           - unique
-      - name: country_name
-        description: "Libellé du pays"
+      - name: ts_stg
+        description: "Timestamp de chargement"
         tests:
           - not_null
-      - name: loaded_at
-        description: "Horodatage de chargement en staging"
+      - name: vr_stg
+        description: "Version YYYYMMDD"
+        tests:
+          - not_null
+      - name: id_obj_tec
+        description: "Identifiant objet technique (1008 = pays)"
+        tests:
+          - not_null
+      - name: cd_src
+        description: "Source des données"
+        tests:
+          - not_null
+      - name: cd_pid
+        description: "Identifiant d'exécution dbt"
+        tests:
+          - not_null
+      - name: lb_dsc
+        description: "Description libre"
+      - name: cd_cty_src
+        description: "Code pays dans le système source"
+        tests:
+          - not_null
+      - name: cd_cty
+        description: "Code ISO 3166 du pays"
+        tests:
+          - not_null
+          - unique
+      - name: lb_cty
+        description: "Libellé du pays"
         tests:
           - not_null
 
   - name: stg_prf
-    description: "Profils de risque des portefeuilles. Une ligne par profil."
+    description: "Profils de risque avec métadonnées techniques STG. Modèle incrémental."
+    config:
+      materialized: incremental
     columns:
-      - name: risk_profile_id
-        description: "Code unique du profil de risque (GROWTH, BALANCED, CONSERV)"
+      - name: id_stg_prf
+        description: "Identifiant technique unique séquentiel"
         tests:
           - not_null
           - unique
-      - name: loaded_at
-        description: "Horodatage de chargement en staging"
+      - name: ts_stg
+        tests:
+          - not_null
+      - name: vr_stg
+        tests:
+          - not_null
+      - name: id_obj_tec
+        description: "Identifiant objet technique (1016 = profil risque)"
+        tests:
+          - not_null
+      - name: cd_src
+        tests:
+          - not_null
+      - name: cd_pid
+        tests:
+          - not_null
+      - name: lb_dsc
+        description: "Description libre"
+      - name: cd_prf_src
+        tests:
+          - not_null
+      - name: cd_prf
+        description: "Code unique du profil de risque"
+        tests:
+          - not_null
+          - unique
+          - accepted_values:
+              arguments:
+                values: ['GROWTH', 'BALANCED', 'CONSERV', 'DYNAMIC', 'INCOME']
+      - name: lb_prf
+        description: "Libellé du profil"
         tests:
           - not_null
 
-  - name: stg_cli_cat
-    description: "Catégories clients (PRIVATE, RETAIL). Une ligne par catégorie."
+  - name: stg_prs
+    description: "Personnes physiques et morales avec métadonnées techniques STG. Modèle incrémental."
+    config:
+      materialized: incremental
     columns:
-      - name: client_category_id
-        description: "Code unique de la catégorie client (PRIVATE, RETAIL)"
+      - name: id_st0_prs
+        description: "Identifiant technique unique séquentiel"
         tests:
           - not_null
           - unique
-      - name: client_category_name
+      - name: ts_stg
+        tests:
+          - not_null
+      - name: vr_stg
+        tests:
+          - not_null
+      - name: id_obj_tec
+        description: "Identifiant objet technique (1017 = personne)"
+        tests:
+          - not_null
+      - name: cd_src
+        tests:
+          - not_null
+      - name: cd_pid
+        tests:
+          - not_null
+      - name: lb_dsc
+        description: "Description libre"
+      - name: cd_prs_src
+        tests:
+          - not_null
+      - name: cd_prs
+        description: "Code unique de la personne"
+        tests:
+          - not_null
+          - unique
+      - name: lb_prs
+        description: "Nom complet"
+        tests:
+          - not_null
+      - name: yn_php
+        description: "Personne physique (Y) ou morale (null)"
+      - name: dt_bth
+        description: "Date de naissance"
+      - name: dt_dth
+        description: "Date de décès"
+      - name: cd_gnd
+        description: "Genre (M/F)"
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['M', 'F']
+      - name: cd_prs_typ
+        description: "Type de personne"
+      - name: cd_cty_nat
+        description: "Pays de nationalité"
+      - name: cd_cty_dom
+        description: "Pays de domicile"
+
+  - name: stg_cli_cat
+    description: "Catégories clients avec métadonnées techniques STG. Modèle incrémental."
+    config:
+      materialized: incremental
+    columns:
+      - name: id_stg_cli_cat
+        description: "Identifiant technique unique séquentiel"
+        tests:
+          - not_null
+          - unique
+      - name: ts_stg
+        description: "Timestamp de chargement"
+        tests:
+          - not_null
+      - name: vr_stg
+        description: "Version YYYYMMDD"
+        tests:
+          - not_null
+      - name: id_obj_tec
+        description: "Identifiant objet technique (1007 = catégorie client)"
+        tests:
+          - not_null
+      - name: cd_src
+        description: "Source des données"
+        tests:
+          - not_null
+      - name: cd_pid
+        description: "Identifiant d'exécution dbt"
+        tests:
+          - not_null
+      - name: lb_dsc
+        description: "Description libre"
+      - name: cd_cli_cat_src
+        description: "Code catégorie dans le système source"
+        tests:
+          - not_null
+      - name: cd_cli_cat
+        description: "Code unique de la catégorie client"
+        tests:
+          - not_null
+          - unique
+          - accepted_values:
+              arguments:
+                values: ['PRIVATE', 'RETAIL', 'INSTIT', 'CORPOR']
+      - name: lb_cli_cat
         description: "Libellé de la catégorie client"
         tests:
           - not_null
-      - name: loaded_at
-        description: "Horodatage de chargement en staging"
-        tests:
-          - not_null
+
+
   - name: stg_agn
-    description: "Agents de distribution rattachés aux portefeuilles."
+    description: "Agents de distribution avec métadonnées techniques STG. Modèle incrémental."
+    config:
+      materialized: incremental
     columns:
-      - name: agent_id
-        description: "Identifiant unique de l'agent"
+      - name: id_stg_agn
+        description: "Identifiant technique unique séquentiel"
         tests:
           - not_null
           - unique
-      - name: agent_name
-        description: "Nom de l'agent"
+      - name: ts_stg
+        description: "Timestamp de chargement"
         tests:
           - not_null
-      - name: loaded_at
-        description: "Horodatage de chargement"
+      - name: vr_stg
+        description: "Version YYYYMMDD"
+        tests:
+          - not_null
+      - name: id_obj_tec
+        description: "Identifiant objet technique (1003 = agent)"
+        tests:
+          - not_null
+      - name: cd_src
+        description: "Source des données"
+        tests:
+          - not_null
+      - name: cd_pid
+        description: "Identifiant d'exécution dbt"
+        tests:
+          - not_null
+      - name: lb_dsc
+        description: "Description libre"
+      - name: cd_agn_src
+        description: "Code agent dans le système source"
+        tests:
+          - not_null
+      - name: cd_agn
+        description: "Code unique de l'agent"
+        tests:
+          - not_null
+          - unique
+      - name: lb_agn
+        description: "Nom de l'agent"
         tests:
           - not_null
 
   - name: stg_buu
-    description: "Business units de la banque."
+    description: "Business units avec métadonnées techniques STG. Modèle incrémental."
+    config:
+      materialized: incremental
     columns:
-      - name: business_unit_id
-        description: "Identifiant unique de la business unit"
+      - name: id_stg_buu
+        description: "Identifiant technique unique séquentiel"
         tests:
           - not_null
           - unique
-      - name: business_unit_name
-        description: "Nom de la business unit"
+      - name: ts_stg
+        description: "Timestamp de chargement"
         tests:
           - not_null
-      - name: loaded_at
-        description: "Horodatage de chargement"
+      - name: vr_stg
+        description: "Version YYYYMMDD"
+        tests:
+          - not_null
+      - name: id_obj_tec
+        description: "Identifiant objet technique (1005 = business unit)"
+        tests:
+          - not_null
+      - name: cd_src
+        description: "Source des données"
+        tests:
+          - not_null
+      - name: cd_pid
+        description: "Identifiant d'exécution dbt"
+        tests:
+          - not_null
+      - name: lb_dsc
+        description: "Description libre"
+      - name: cd_buu_src
+        description: "Code business unit dans le système source"
+        tests:
+          - not_null
+      - name: cd_buu
+        description: "Code unique de la business unit"
+        tests:
+          - not_null
+          - unique
+      - name: lb_buu
+        description: "Nom de la business unit"
         tests:
           - not_null
 
   - name: stg_ent
-    description: "Entités juridiques de la banque."
+    description: "Entités juridiques avec métadonnées techniques STG. Modèle incrémental."
+    config:
+      materialized: incremental
     columns:
-      - name: entity_id
-        description: "Identifiant unique de l'entité"
+      - name: id_stg_ent
+        description: "Identifiant technique unique séquentiel"
         tests:
           - not_null
           - unique
-      - name: entity_name
-        description: "Nom de l'entité juridique"
+      - name: ts_stg
+        description: "Timestamp de chargement"
         tests:
           - not_null
-      - name: loaded_at
-        description: "Horodatage de chargement"
+      - name: vr_stg
+        description: "Version YYYYMMDD"
+        tests:
+          - not_null
+      - name: id_obj_tec
+        description: "Identifiant objet technique (1009 = entité juridique)"
+        tests:
+          - not_null
+      - name: cd_src
+        description: "Source des données"
+        tests:
+          - not_null
+      - name: cd_pid
+        description: "Identifiant d'exécution dbt"
+        tests:
+          - not_null
+      - name: lb_dsc
+        description: "Description libre"
+      - name: cd_ent_src
+        description: "Code entité dans le système source"
+        tests:
+          - not_null
+      - name: cd_ent
+        description: "Code unique de l'entité juridique"
+        tests:
+          - not_null
+          - unique
+      - name: lb_ent
+        description: "Raison sociale de l'entité"
         tests:
           - not_null
 
   - name: stg_mng_ext
-    description: "Gestionnaires externes mandatés sur certains portefeuilles."
+    description: "Gestionnaires externes avec métadonnées techniques STG. Modèle incrémental."
+    config:
+      materialized: incremental
     columns:
-      - name: ext_manager_id
-        description: "Identifiant unique du gestionnaire externe"
+      - name: id_stg_mng_ext
+        description: "Identifiant technique unique séquentiel"
         tests:
           - not_null
           - unique
-      - name: ext_manager_name
-        description: "Nom du gestionnaire externe"
+      - name: ts_stg
+        description: "Timestamp de chargement"
         tests:
           - not_null
-      - name: loaded_at
-        description: "Horodatage de chargement"
+      - name: vr_stg
+        description: "Version YYYYMMDD"
+        tests:
+          - not_null
+      - name: id_obj_tec
+        description: "Identifiant objet technique (1013 = gestionnaire externe)"
+        tests:
+          - not_null
+      - name: cd_src
+        description: "Source des données"
+        tests:
+          - not_null
+      - name: cd_pid
+        description: "Identifiant d'exécution dbt"
+        tests:
+          - not_null
+      - name: lb_dsc
+        description: "Description libre"
+      - name: cd_mng_ext_src
+        description: "Code gestionnaire externe dans le système source"
+        tests:
+          - not_null
+      - name: cd_mng_ext
+        description: "Code unique du gestionnaire externe"
+        tests:
+          - not_null
+          - unique
+      - name: lb_mng_ext
+        description: "Nom du gestionnaire externe"
         tests:
           - not_null
 
   - name: stg_mng_grp
-    description: "Groupes / équipes des relationship managers."
+    description: "Groupes de managers avec métadonnées techniques STG. Modèle incrémental."
+    config:
+      materialized: incremental
     columns:
-      - name: manager_group_id
-        description: "Identifiant unique du groupe"
+      - name: id_stg_mng_grp
+        description: "Identifiant technique unique séquentiel"
         tests:
           - not_null
           - unique
-      - name: manager_group_name
-        description: "Nom du groupe"
+      - name: ts_stg
+        description: "Timestamp de chargement"
         tests:
           - not_null
-      - name: loaded_at
-        description: "Horodatage de chargement"
+      - name: vr_stg
+        description: "Version YYYYMMDD"
+        tests:
+          - not_null
+      - name: id_obj_tec
+        description: "Identifiant objet technique (1014 = groupe manager)"
+        tests:
+          - not_null
+      - name: cd_src
+        description: "Source des données"
+        tests:
+          - not_null
+      - name: cd_pid
+        description: "Identifiant d'exécution dbt"
+        tests:
+          - not_null
+      - name: lb_dsc
+        description: "Description libre"
+      - name: cd_mng_grp_src
+        description: "Code groupe dans le système source"
+        tests:
+          - not_null
+      - name: cd_mng_grp
+        description: "Code unique du groupe de managers"
+        tests:
+          - not_null
+          - unique
+      - name: lb_mng_grp
+        description: "Libellé du groupe"
         tests:
           - not_null
 
   - name: stg_ins_grp
-    description: "Groupes d'instruments financiers (EQU, CSH, BND)."
+    description: "Groupes d'instruments avec métadonnées techniques STG. Modèle incrémental."
+    config:
+      materialized: incremental
     columns:
-      - name: ins_grp_id
-        description: "Identifiant unique du groupe d'instruments"
+      - name: id_stg_ins_grp
+        description: "Identifiant technique unique séquentiel"
         tests:
           - not_null
           - unique
-      - name: ins_grp_name
-        description: "Libellé du groupe"
+      - name: ts_stg
+        description: "Timestamp de chargement"
         tests:
           - not_null
-      - name: loaded_at
-        description: "Horodatage de chargement"
+      - name: vr_stg
+        description: "Version YYYYMMDD"
         tests:
           - not_null
+      - name: id_obj_tec
+        description: "Identifiant objet technique (1011 = groupe instrument)"
+        tests:
+          - not_null
+      - name: cd_src
+        description: "Source des données"
+        tests:
+          - not_null
+      - name: cd_pid
+        description: "Identifiant d'exécution dbt"
+        tests:
+          - not_null
+      - name: lb_dsc
+        description: "Description libre"
+      - name: cd_ins_grp_src
+        description: "Code groupe dans le système source"
+        tests:
+          - not_null
+      - name: cd_ins_grp
+        description: "Code unique du groupe d'instruments"
+        tests:
+          - not_null
+          - unique
+          - accepted_values:
+              arguments:
+                values: ['EQU', 'BND', 'CSH', 'ETF', 'IMO', 'ALT']
+      - name: lb_ins_grp
+        description: "Libellé du groupe d'instruments"
+        tests:
+          - not_null
+
+
+  - name: stg_ast
+    description: "Actifs financiers avec métadonnées techniques STG. Modèle incrémental."
+    config:
+      materialized: incremental
+    columns:
+      - name: id_stg_ast
+        description: "Identifiant technique unique séquentiel"
+        tests:
+          - not_null
+          - unique
+      - name: ts_stg
+        description: "Timestamp de chargement"
+        tests:
+          - not_null
+      - name: vr_stg
+        description: "Version YYYYMMDD"
+        tests:
+          - not_null
+      - name: id_obj_tec
+        description: "Identifiant objet technique (1004 = actif)"
+        tests:
+          - not_null
+      - name: cd_src
+        description: "Source des données"
+        tests:
+          - not_null
+      - name: cd_pid
+        description: "Identifiant d'exécution dbt"
+        tests:
+          - not_null
+      - name: lb_dsc
+        description: "Description libre"
+      - name: cd_ast_src
+        description: "Code actif dans le système source"
+        tests:
+          - not_null
+      - name: cd_ast
+        description: "Code unique de l'actif"
+        tests:
+          - not_null
+          - unique
+      - name: lb_ast
+        description: "Libellé court de l'actif"
+        tests:
+          - not_null
+      - name: tt_ast
+        description: "Description longue de l'actif"
+      - name: cd_rat
+        description: "Code de notation financière (null pour les actions)"

@@ -133,6 +133,54 @@ models:
         data_type: varchar
         tests:
           - not_null
+      - name: nationality
+        description: "Nationalité du client"
+        data_type: varchar
+      - name: ptf_name_alt
+        description: "Libellé alternatif du portefeuille"
+        data_type: varchar
+      - name: manager_group_id
+        description: "Groupe du manager"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: manager_group_name
+        description: "Nom du groupe du manager"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: ext_manager_id
+        description: "Gestionnaire externe mandaté"
+        data_type: varchar
+      - name: ext_manager_name
+        description: "Nom du gestionnaire externe"
+        data_type: varchar
+      - name: agent_id
+        description: "Agent de distribution"
+        data_type: varchar
+      - name: agent_name
+        description: "Nom de l'agent"
+        data_type: varchar
+      - name: entity_id
+        description: "Entité juridique"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: entity_name
+        description: "Nom de l'entité juridique"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: business_unit_id
+        description: "Business unit"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: business_unit_name
+        description: "Nom de la business unit"
+        data_type: varchar
+        tests:
+          - not_null
 
   - name: mart_portfolio_performance
     description: "Performance des portefeuilles avec valorisation FX. Une ligne par portefeuille, actif et date."
@@ -195,6 +243,16 @@ models:
           - not_null
       - name: manager_name
         description: "Nom complet du gestionnaire"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: manager_group_id
+        description: "Groupe du manager"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: manager_group_name
+        description: "Nom du groupe du manager"
         data_type: varchar
         tests:
           - not_null
@@ -269,5 +327,225 @@ models:
       - name: loaded_at
         description: "Horodatage de génération de la ligne"
         data_type: timestamp
+        tests:
+          - not_null
+
+
+  - name: mart_ptf_detail
+    description: "Vue complète des portefeuilles par date avec métriques en devise locale et en CHF (devise de référence banque). Une ligne par portefeuille et par date de fait."
+    columns:
+      - name: dt_fct
+        description: "Date de fait (fin de mois)"
+        data_type: date
+        tests:
+          - not_null
+      - name: ptf_id
+        description: "Identifiant du portefeuille"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: ptf_name
+        description: "Libellé du portefeuille"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: ptf_name_alt
+        description: "Libellé alternatif"
+        data_type: varchar
+      - name: client_id
+        description: "Client propriétaire"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: currency
+        description: "Devise du portefeuille"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: xrt_rate
+        description: "Taux de change appliqué vers CHF"
+        data_type: double
+        tests:
+          - not_null
+      - name: risk_profile
+        description: "Code profil de risque"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: risk_profile_name
+        description: "Libellé profil de risque"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: manager_id
+        description: "Code du manager"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: manager_name
+        description: "Nom du manager"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: manager_group_id
+        description: "Code du groupe manager"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: manager_group_name
+        description: "Nom du groupe manager"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: ext_manager_id
+        description: "Code gestionnaire externe"
+        data_type: varchar
+      - name: ext_manager_name
+        description: "Nom gestionnaire externe"
+        data_type: varchar
+      - name: agent_id
+        description: "Code agent"
+        data_type: varchar
+      - name: agent_name
+        description: "Nom agent"
+        data_type: varchar
+      - name: entity_id
+        description: "Code entité juridique"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: entity_name
+        description: "Nom entité juridique"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: business_unit_id
+        description: "Code business unit"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: business_unit_name
+        description: "Nom business unit"
+        data_type: varchar
+        tests:
+          - not_null
+      - name: pc_ptf
+        description: "Poids relatif du portefeuille"
+        data_type: double
+        tests:
+          - not_null
+      - name: mt_net
+        description: "Actif net en devise du portefeuille"
+        data_type: decimal(19,4)
+        tests:
+          - not_null
+      - name: mt_net_ref
+        description: "Actif net en CHF"
+        data_type: decimal(19,4)
+        tests:
+          - not_null
+      - name: mt_aci
+        description: "Intérêts courus en devise du portefeuille"
+        data_type: decimal(19,4)
+        tests:
+          - not_null
+      - name: mt_aci_ref
+        description: "Intérêts courus en CHF"
+        data_type: decimal(19,4)
+        tests:
+          - not_null
+      - name: mt_lia
+        description: "Passif en devise du portefeuille"
+        data_type: decimal(19,4)
+        tests:
+          - not_null
+      - name: mt_lia_ref
+        description: "Passif en CHF"
+        data_type: decimal(19,4)
+        tests:
+          - not_null
+      - name: mt_pnl
+        description: "P&L en devise du portefeuille"
+        data_type: decimal(19,4)
+        tests:
+          - not_null
+      - name: mt_pnl_ref
+        description: "P&L en CHF"
+        data_type: decimal(19,4)
+        tests:
+          - not_null
+      - name: mt_pnc
+        description: "Variation nette en devise du portefeuille"
+        data_type: decimal(19,4)
+        tests:
+          - not_null
+      - name: mt_pnc_ref
+        description: "Variation nette en CHF"
+        data_type: decimal(19,4)
+        tests:
+          - not_null
+      - name: mt_inc
+        description: "Flux entrants en devise du portefeuille"
+        data_type: decimal(19,4)
+        tests:
+          - not_null
+      - name: mt_inc_ref
+        description: "Flux entrants en CHF"
+        data_type: decimal(19,4)
+        tests:
+          - not_null
+      - name: mt_out
+        description: "Flux sortants en devise du portefeuille"
+        data_type: decimal(19,4)
+        tests:
+          - not_null
+      - name: mt_out_ref
+        description: "Flux sortants en CHF"
+        data_type: decimal(19,4)
+        tests:
+          - not_null
+      - name: mt_nnm_inc
+        description: "NNM entrant en devise du portefeuille"
+        data_type: decimal(19,4)
+        tests:
+          - not_null
+      - name: mt_nnm_inc_ref
+        description: "NNM entrant en CHF"
+        data_type: decimal(19,4)
+        tests:
+          - not_null
+      - name: mt_nnm_out
+        description: "NNM sortant en devise du portefeuille"
+        data_type: decimal(19,4)
+        tests:
+          - not_null
+      - name: mt_nnm_out_ref
+        description: "NNM sortant en CHF"
+        data_type: decimal(19,4)
+        tests:
+          - not_null
+      - name: mt_int_inc
+        description: "Flux d'intérêts entrants en devise du portefeuille"
+        data_type: decimal(19,4)
+        tests:
+          - not_null
+      - name: mt_int_inc_ref
+        description: "Flux d'intérêts entrants en CHF"
+        data_type: decimal(19,4)
+        tests:
+          - not_null
+      - name: mt_int_out
+        description: "Flux d'intérêts sortants en devise du portefeuille"
+        data_type: decimal(19,4)
+        tests:
+          - not_null
+      - name: mt_int_out_ref
+        description: "Flux d'intérêts sortants en CHF"
+        data_type: decimal(19,4)
+        tests:
+          - not_null
+      - name: loaded_at
+        description: "Date de chargement"
+        data_type: date
         tests:
           - not_null

@@ -20,6 +20,7 @@ select
     src.currency,
     src.country,
     coalesce(cty.country_name, src.country)                 as country_name,
+    src.nationality,
     src.relationship_manager_id,
     src.opening_date,
     src.closing_date,

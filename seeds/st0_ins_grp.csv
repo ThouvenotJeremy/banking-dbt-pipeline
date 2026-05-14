@@ -1,4 +1,7 @@
-CD_INS_GRP,LB_INS_GRP,TS_STG
-EQU,Actions,2024-01-01
-CSH,Liquidités,2024-01-01
-BND,Obligations,2024-01-01
+CD_INS_GRP,LB_INS_GRP
+EQU,Actions
+BND,Obligations
+CSH,Liquidités
+ETF,Fonds Indiciels Cotés
+IMO,Immobilier
+ALT,Actifs Alternatifs

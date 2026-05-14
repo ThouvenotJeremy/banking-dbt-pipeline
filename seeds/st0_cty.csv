@@ -1,6 +1,16 @@
-CD_CTY,LB_CTY,TS_STG
-CH,Switzerland,2024-01-01
-FR,France,2024-01-01
-GB,United Kingdom,2024-01-01
-US,United States,2024-01-01
-DE,Germany,2024-01-01
+CD_CTY,LB_CTY
+CH,Suisse
+FR,France
+DE,Allemagne
+GB,Royaume-Uni
+US,États-Unis
+IT,Italie
+ES,Espagne
+PT,Portugal
+BE,Belgique
+NL,Pays-Bas
+AT,Autriche
+LU,Luxembourg
+SG,Singapour
+AE,Émirats Arabes Unis
+HK,Hong Kong

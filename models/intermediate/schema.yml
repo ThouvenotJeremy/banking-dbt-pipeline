@@ -52,6 +52,8 @@ models:
         description: "Début de validité de l'enregistrement SCD2"
         tests:
           - not_null
+      - name: nationality
+        description: "Pays de nationalité du client (peut différer du domicile)"
 
   - name: int_ptf
     description: "Portefeuilles enrichis avec suivi SCD Type 2. Une ligne par portefeuille et par date de fait (dt_fct)."
@@ -92,6 +94,34 @@ models:
         description: "Horodatage de la dernière mise à jour de l'enregistrement SCD2"
       - name: valid_from
         description: "Début de validité de l'enregistrement SCD2"
+        tests:
+          - not_null
+      - name: manager_group_name
+        description: "Nom du groupe du manager"
+        tests:
+          - not_null
+      - name: ext_manager_id
+        description: "Gestionnaire externe mandaté (null si gérance interne)"
+      - name: ext_manager_name
+        description: "Nom du gestionnaire externe"
+      - name: agent_id
+        description: "Agent de distribution"
+      - name: agent_name
+        description: "Nom de l'agent"
+      - name: entity_id
+        description: "Entité juridique de rattachement"
+        tests:
+          - not_null
+      - name: entity_name
+        description: "Nom de l'entité juridique"
+        tests:
+          - not_null
+      - name: business_unit_id
+        description: "Business unit responsable"
+        tests:
+          - not_null
+      - name: business_unit_name
+        description: "Nom de la business unit"
         tests:
           - not_null
 
@@ -218,3 +248,98 @@ models:
         description: "Devise de la position"
         tests:
           - not_null
+
+          
+      - name: int_fct_xrt
+        description: "Taux de change journaliers en couche intermédiaire. Une ligne par devise et par date."
+        columns:
+          - name: fct_xrt_id
+            description: "Identifiant technique du taux"
+            tests:
+              - not_null
+              - unique
+          - name: currency
+            description: "Code devise source"
+            tests:
+              - not_null
+          - name: dt_fct
+            description: "Date du taux"
+            tests:
+              - not_null
+          - name: rate_factor
+            description: "Facteur de conversion"
+            tests:
+              - not_null
+          - name: rate_value
+            description: "Valeur du taux vers CHF (devise de référence banque)"
+            tests:
+              - not_null
+
+          - name: int_fct_ptf
+            description: "Faits portefeuilles mensuels en couche intermédiaire. Renommage des colonnes stg vers nomenclature métier. Une ligne par portefeuille et par date."
+            columns:
+              - name: fct_ptf_id
+                description: "Identifiant technique unique"
+                tests:
+                  - not_null
+                  - unique
+              - name: ptf_id
+                description: "Portefeuille"
+                tests:
+                  - not_null
+              - name: dt_fct
+                description: "Date de fait"
+                tests:
+                  - not_null
+              - name: pc_ptf
+                description: "Poids relatif du portefeuille"
+                tests:
+                  - not_null
+              - name: mt_net
+                description: "Actif net en devise du portefeuille"
+                tests:
+                  - not_null
+              - name: mt_aci
+                description: "Intérêts courus en devise du portefeuille"
+                tests:
+                  - not_null
+              - name: mt_lia
+                description: "Passif en devise du portefeuille"
+                tests:
+                  - not_null
+              - name: mt_pnl
+                description: "P&L en devise du portefeuille"
+                tests:
+                  - not_null
+              - name: mt_pnc
+                description: "Variation nette en devise du portefeuille"
+                tests:
+                  - not_null
+              - name: mt_inc
+                description: "Flux entrants en devise du portefeuille"
+                tests:
+                  - not_null
+              - name: mt_out
+                description: "Flux sortants en devise du portefeuille"
+                tests:
+                  - not_null
+              - name: mt_nnm_inc
+                description: "NNM entrant en devise du portefeuille"
+                tests:
+                  - not_null
+              - name: mt_nnm_out
+                description: "NNM sortant en devise du portefeuille"
+                tests:
+                  - not_null
+              - name: mt_int_inc
+                description: "Flux d'intérêts entrants en devise du portefeuille"
+                tests:
+                  - not_null
+              - name: mt_int_out
+                description: "Flux d'intérêts sortants en devise du portefeuille"
+                tests:
+                  - not_null
+              - name: loaded_at
+                description: "Date de chargement"
+                tests:
+                  - not_null

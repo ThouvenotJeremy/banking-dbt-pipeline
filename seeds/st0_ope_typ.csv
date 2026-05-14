@@ -1,8 +1,13 @@
-CD_OPE_TYP,LB_OPE_TYP,YN_NNM,YN_INT,YN_LOA,TS_STG
-BUY,Achat de titre,N,N,N,2024-01-01
-SELL,Vente de titre,N,N,N,2024-01-01
-NNM_IN,Apport client,Y,N,N,2024-01-01
-NNM_OUT,Retrait client,Y,N,N,2024-01-01
-INT_IN,Intérêt créditeur,N,Y,N,2024-01-01
-INT_OUT,Intérêt débiteur,N,Y,N,2024-01-01
-LOA,Prêt,N,N,Y,2024-01-01
+CD_OPE_TYP,LB_OPE_TYP,YN_NNM,YN_INT,YN_LOA
+BUY,Achat de titres,Y,N,N
+SELL,Vente de titres,Y,N,N
+SUB,Souscription,Y,N,N
+RED,Rachat,Y,N,N
+INC,Versement client,Y,N,N
+OUT,Retrait client,Y,N,N
+INT,Paiement d'intérêts,N,Y,N
+DIV,Paiement de dividendes,N,Y,N
+LOA,Octroi de prêt,N,N,Y
+LOA_REP,Remboursement de prêt,N,N,Y
+FEE,Frais de gestion,N,N,N
+TAX,Retenue à la source,N,N,N

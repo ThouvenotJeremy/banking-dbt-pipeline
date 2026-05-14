@@ -12,23 +12,36 @@ with aum_ytd as (
     select * from {{ ref('mart_aum_ytd') }}
 ),
 
--- Aggregation by RM (manager)
+mng as (
+    select * from {{ ref('stg_mng') }}
+),
+
+mng_grp as (
+    select * from {{ ref('stg_mng_grp') }}
+),
+
 rm_daily_aum as (
     select
-        dt_fct,
-        manager_id,
-        manager_name,
-        sum(aum_current) as aum_current,
-        sum(aum_ytd_start) as aum_ytd_start,
-        count(distinct client_id) as client_count,
-        count(distinct ptf_id) as portfolio_count,
-        count(distinct client_category) as category_count,
-        current_date as performance_date
-    from aum_ytd
+        aum.dt_fct,
+        aum.manager_id,
+        aum.manager_name,
+        mng.manager_group_id,
+        coalesce(mng_grp.manager_group_name, mng.manager_group_id) as manager_group_name,
+        sum(aum.aum_current)              as aum_current,
+        sum(aum.aum_ytd_start)            as aum_ytd_start,
+        count(distinct aum.client_id)     as client_count,
+        count(distinct aum.ptf_id)        as portfolio_count,
+        count(distinct aum.client_category) as category_count,
+        current_date                      as performance_date
+    from aum_ytd aum
+    left join mng     on aum.manager_id       = mng.manager_id
+    left join mng_grp on mng.manager_group_id = mng_grp.manager_group_id
     group by
-        dt_fct,
-        manager_id,
-        manager_name,
+        aum.dt_fct,
+        aum.manager_id,
+        aum.manager_name,
+        mng.manager_group_id,
+        mng_grp.manager_group_name,
         current_date
 ),
 
@@ -38,6 +51,8 @@ rm_performance as (
         current.dt_fct,
         current.manager_id,
         current.manager_name,
+        current.manager_group_id,
+        current.manager_group_name,
         cast(current.aum_current as double) as aum_current,
         cast(current.aum_ytd_start as double) as aum_ytd_start,
         case
@@ -67,6 +82,8 @@ select
     dt_fct,
     manager_id,
     manager_name,
+    manager_group_id,
+    manager_group_name,
     aum_current,
     aum_ytd_start,
     aum_ytd_variation_pct,

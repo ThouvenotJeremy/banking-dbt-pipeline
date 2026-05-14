@@ -1,3 +1,5 @@
-CD_CLI_CAT,LB_CLI_CAT,TS_STG
-PRIVATE,Banque Privée,2024-01-01
-RETAIL,Banque de Détail,2024-01-01
+CD_CLI_CAT,LB_CLI_CAT
+PRIVATE,Clientèle Privée
+RETAIL,Clientèle Retail
+INSTIT,Clientèle Institutionnelle
+CORPOR,Clientèle Corporate

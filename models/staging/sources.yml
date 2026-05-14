@@ -6,51 +6,72 @@ sources:
     description: "Couche de données brutes simulant le core banking Avaloq. Toutes les tables sont préfixées st0_."
     tables:
       - name: st0_cli
-        description: "Référentiel clients brut. Une ligne par client."
+        description: "Référentiel clients brut extrait du core banking. Une ligne par client, état courant uniquement."
         columns:
           - name: cd_cli
             description: "Code unique du client"
           - name: lb_cli
-            description: "Libellé / nom du client"
-          - name: cd_cli_cat
-            description: "Catégorie du client (PRIVATE, RETAIL)"
-          - name: cd_ccy
-            description: "Code devise de référence du client"
-          - name: cd_cty_dom
-            description: "Code pays de domicile"
-          - name: cd_mng_rel
-            description: "Code du relationship manager responsable"
+            description: "Nom complet du client"
+          - name: lb_cli_alt
+            description: "Nom alternatif du client (format NOM Prénom)"
           - name: dt_cre
             description: "Date de création / ouverture du client"
           - name: dt_clo
             description: "Date de clôture du client (null si actif)"
-          - name: ts_stg
-            description: "Horodatage de chargement en staging"
+          - name: cd_cty_dom
+            description: "Code pays de domicile (ISO 3166)"
+          - name: cd_cty_nat
+            description: "Code pays de nationalité (ISO 3166)"
+          - name: cd_mng_rel
+            description: "Code du relationship manager responsable"
+          - name: cd_cli_cat
+            description: "Catégorie du client (PRIVATE, RETAIL)"
+          - name: cd_ccy
+            description: "Code devise de référence du client"
 
       - name: st0_ptf
-        description: "Référentiel portefeuilles brut. Une ligne par portefeuille."
+        description: "Référentiel portefeuilles brut. Une ligne par portefeuille, état courant."
         columns:
           - name: cd_ptf
             description: "Code unique du portefeuille"
           - name: lb_ptf
             description: "Libellé du portefeuille"
-          - name: cd_cli
-            description: "Code du client propriétaire"
-          - name: cd_ccy
-            description: "Code devise de référence du portefeuille"
-          - name: cd_prf
-            description: "Code profil de risque (GROWTH, BALANCED, CONSERV)"
-          - name: cd_mng
-            description: "Code du manager gestionnaire du portefeuille"
+          - name: lb_ptf_alt
+            description: "Libellé alternatif"
           - name: dt_cre
-            description: "Date de création / ouverture du portefeuille"
+            description: "Date d'ouverture"
           - name: dt_clo
-            description: "Date de clôture du portefeuille (null si actif)"
-          - name: ts_stg
-            description: "Horodatage de chargement en staging"
+            description: "Date de clôture (null si actif)"
+          - name: cd_cli
+            description: "Client propriétaire"
+          - name: cd_ccy
+            description: "Devise de référence"
+          - name: cd_prf
+            description: "Profil de risque"
+          - name: cd_mng
+            description: "Relationship manager"
+          - name: cd_mng_ext
+            description: "Gestionnaire externe (null si gérance interne)"
+          - name: cd_agn
+            description: "Agent de distribution"
+          - name: cd_ent
+            description: "Entité juridique"
+          - name: cd_buu
+            description: "Business unit"
 
       - name: st0_ope_typ
-        description: "Types d'opérations avec flags NNM, intérêts, prêts"
+        description: "Types d'opérations financières bruts. Une ligne par type."
+        columns:
+          - name: cd_ope_typ
+            description: "Code unique du type d'opération"
+          - name: lb_ope_typ
+            description: "Libellé du type d'opération"
+          - name: yn_nnm
+            description: "Indicateur New Net Money (Y/N)"
+          - name: yn_int
+            description: "Indicateur flux d'intérêts (Y/N)"
+          - name: yn_loa
+            description: "Indicateur prêt (Y/N)"
 
       - name: st0_fct_ope
         description: "Transactions financières brutes. Une ligne par opération."
@@ -109,39 +130,39 @@ sources:
       - name: st0_fct_xrt
         description: "Taux de change journaliers. Une ligne par devise et par date."
         columns:
-          - name: DT_FCT
-            description: "Date du taux de change"
-          - name: CD_CCY
+          - name: cd_fct_xrt
+            description: "Identifiant technique du taux"
+          - name: cd_ccy
             description: "Code devise source"
+          - name: dt_fct
+            description: "Date du taux"
+          - name: rt_fac
+            description: "Facteur de conversion"
           - name: rt_val
-            description: "Valeur du taux de change vers la devise de référence"
+            description: "Valeur du taux vers la devise de référence"
 
       - name: st0_fct_xrt_prices
         description: "Taux de change et prix de marché journaliers. Une ligne par instrument et par date."
 
       - name: st0_mng
-        description: "Référentiel Relationship Managers. Une ligne par manager."
+        description: "Relationship managers bruts. Une ligne par manager."
         columns:
           - name: cd_mng
             description: "Code unique du manager"
           - name: lb_mng
             description: "Nom complet du manager"
           - name: cd_mng_grp
-            description: "Code du groupe / équipe du manager"
-          - name: ts_stg
-            description: "Horodatage de chargement en staging"
+            description: "Code du groupe d'appartenance"
 
       - name: st0_ins
-        description: "Référentiel instruments financiers. Une ligne par instrument."
+        description: "Référentiel des instruments financiers bruts. Une ligne par instrument."
         columns:
           - name: cd_ins
             description: "Code unique de l'instrument"
           - name: lb_ins
             description: "Libellé de l'instrument"
           - name: cd_ins_grp
-            description: "Code du groupe d'instruments"
-          - name: ts_stg
-            description: "Horodatage de chargement en staging"
+            description: "Code du groupe d'instruments (EQU, BND, CSH, ETF)"
 
       - name: st0_fct_ptf
         description: "Performance portefeuille mensuelle brute. Une ligne par portefeuille et par mois."
@@ -196,109 +217,116 @@ sources:
             description: "Horodatage de chargement en staging"
 
       - name: st0_ccy
-        description: "Référentiel des devises supportées. Une ligne par devise."
+        description: "Référentiel des devises brut. Une ligne par devise."
         columns:
           - name: cd_ccy
-            description: "Code unique de la devise (USD, EUR, CHF, GBP)"
+            description: "Code ISO 4217 de la devise"
           - name: lb_ccy
             description: "Libellé de la devise"
-          - name: is_base
-            description: "Indicateur de devise de référence (Y/N)"
-          - name: ts_stg
-            description: "Horodatage de chargement en staging"
 
       - name: st0_cty
-        description: "Référentiel des pays. Une ligne par pays."
+        description: "Référentiel des pays brut. Une ligne par pays."
         columns:
           - name: cd_cty
-            description: "Code unique du pays (ISO 3166)"
+            description: "Code ISO 3166 du pays"
           - name: lb_cty
             description: "Libellé du pays"
-          - name: cd_rg
-            description: "Code de la région géographique"
-          - name: ts_stg
-            description: "Horodatage de chargement en staging"
 
       - name: st0_prf
-        description: "Référentiel des profils de risque. Une ligne par profil."
+        description: "Profils de risque bruts. Une ligne par profil."
         columns:
           - name: cd_prf
-            description: "Code unique du profil de risque (GROWTH, BALANCED, CONSERV)"
+            description: "Code unique du profil de risque"
           - name: lb_prf
-            description: "Libellé du profil de risque"
-          - name: sc_ris
-            description: "Score de risque (1-10)"
-          - name: ts_stg
-            description: "Horodatage de chargement en staging"
+            description: "Libellé du profil"
+
+      - name: st0_prs
+        description: "Personnes physiques et morales brutes. Une ligne par personne."
+        columns:
+          - name: cd_prs
+            description: "Code unique de la personne"
+          - name: lb_prs
+            description: "Nom complet"
+          - name: yn_php
+            description: "Indicateur personne physique (Y) ou morale (null)"
+          - name: dt_bth
+            description: "Date de naissance"
+          - name: dt_dth
+            description: "Date de décès"
+          - name: cd_gnd
+            description: "Genre (M/F)"
+          - name: cd_prs_typ
+            description: "Type de personne"
+          - name: cd_cty_nat
+            description: "Pays de nationalité"
+          - name: cd_cty_dom
+            description: "Pays de domicile"
 
       - name: st0_cli_cat
-        description: "Référentiel des catégories clients. Une ligne par catégorie."
+        description: "Catégories clients brutes. Une ligne par catégorie."
         columns:
           - name: cd_cli_cat
-            description: "Code unique de la catégorie client (PRIVATE, RETAIL)"
+            description: "Code unique de la catégorie client"
           - name: lb_cli_cat
             description: "Libellé de la catégorie client"
-          - name: min_aum
-            description: "AUM minimum requis pour cette catégorie"
-          - name: ts_stg
-            description: "Horodatage de chargement en staging"
 
       - name: st0_agn
-        description: "Agents de distribution. Une ligne par agent."
+        description: "Agents de distribution bruts. Une ligne par agent."
         columns:
           - name: cd_agn
             description: "Code unique de l'agent"
           - name: lb_agn
             description: "Nom de l'agent"
-          - name: ts_stg
-            description: "Horodatage de chargement"
 
       - name: st0_buu
-        description: "Business units. Une ligne par unité."
+        description: "Business units brutes. Une ligne par unité."
         columns:
           - name: cd_buu
             description: "Code unique de la business unit"
           - name: lb_buu
             description: "Nom de la business unit"
-          - name: ts_stg
-            description: "Horodatage de chargement"
 
-      - name: st0_ent
-        description: "Entités juridiques. Une ligne par entité."
+      - name: st0_ent 
+        description: "Entités juridiques brutes. Une ligne par entité."
         columns:
           - name: cd_ent
-            description: "Code unique de l'entité"
+            description: "Code unique de l'entité juridique"
           - name: lb_ent
-            description: "Nom de l'entité juridique"
-          - name: ts_stg
-            description: "Horodatage de chargement"
+            description: "Raison sociale de l'entité"
 
       - name: st0_mng_ext
-        description: "Gestionnaires externes mandatés. Une ligne par gestionnaire."
+        description: "Gestionnaires externes mandatés bruts. Une ligne par gestionnaire."
         columns:
           - name: cd_mng_ext
             description: "Code unique du gestionnaire externe"
           - name: lb_mng_ext
             description: "Nom du gestionnaire externe"
-          - name: ts_stg
-            description: "Horodatage de chargement"
 
       - name: st0_mng_grp
-        description: "Groupes de managers. Une ligne par groupe."
+        description: "Groupes de managers bruts. Une ligne par groupe."
         columns:
           - name: cd_mng_grp
-            description: "Code unique du groupe"
+            description: "Code unique du groupe de managers"
           - name: lb_mng_grp
-            description: "Nom du groupe"
-          - name: ts_stg
-            description: "Horodatage de chargement"
+            description: "Libellé du groupe"
 
       - name: st0_ins_grp
-        description: "Groupes d'instruments financiers. Une ligne par groupe."
+        description: "Groupes d'instruments financiers bruts. Une ligne par groupe."
         columns:
           - name: cd_ins_grp
             description: "Code unique du groupe d'instruments"
           - name: lb_ins_grp
-            description: "Nom du groupe"
-          - name: ts_stg
-            description: "Horodatage de chargement"
+            description: "Libellé du groupe d'instruments"
+
+
+      - name: st0_ast
+        description: "Référentiel des actifs financiers bruts. Une ligne par actif."
+        columns:
+          - name: cd_ast
+            description: "Code unique de l'actif"
+          - name: lb_ast
+            description: "Libellé court de l'actif"
+          - name: tt_ast
+            description: "Description longue de l'actif"
+          - name: cd_rat
+            description: "Code de notation (AAA, AA... — null pour les actions)"

@@ -1,3 +1,6 @@
-CD_MNG_GRP,LB_MNG_GRP,TS_STG
-GRP_GENEVE,Equipe Genève,2024-01-01
-GRP_ZURICH,Equipe Zurich,2024-01-01
+CD_MNG_GRP,LB_MNG_GRP
+GRP_GENEVE,Équipe Genève
+GRP_ZURICH,Équipe Zurich
+GRP_LUGANO,Équipe Lugano
+GRP_LONDON,Équipe Londres
+GRP_INTERN,Équipe Internationale
