@@ -104,34 +104,46 @@ sources:
             description: "Horodatage de chargement en staging"
 
       - name: st0_fct_ast
-        description: "Positions d'actifs brutes. Une ligne par position et par date de valorisation."
+        description: "Positions d'actifs brutes issues du core banking. Une ligne par position et par date de valorisation."
         columns:
           - name: cd_fct_ast
-            description: "Identifiant technique unique de la position"
+            description: "Identifiant unique de la position (CD_PTF-CD_AST-YYYYMMDD)"
           - name: cd_pos
             description: "Code de la position"
           - name: cd_pos_typ
-            description: "Type de position"
+            description: "Type de position (T=titres, C=cash)"
           - name: cd_ptf
-            description: "Code du portefeuille de rattachement"
-          - name: cd_ast
-            description: "Code de l'actif"
+            description: "Portefeuille de rattachement"
+          - name: dt_fct
+            description: "Date de valorisation"
           - name: cd_ccy
-            description: "Code devise de la position"
+            description: "Devise de la position"
+          - name: cd_ins
+            description: "Instrument financier"
+          - name: cd_ast
+            description: "Actif financier"
+          - name: lb_fct_ast
+            description: "Libellé de la position"
           - name: qt_ast
             description: "Quantité détenue"
           - name: mt_ast
-            description: "Valorisation de la position en devise locale"
-          - name: dt_fct
-            description: "Date de valorisation"
-          - name: ts_stg
-            description: "Horodatage de chargement en staging"
+            description: "Valorisation en devise locale"
+          - name: mt_aci
+            description: "Intérêts courus en devise locale"
+          - name: rt_prm
+            description: "Poids dans le portefeuille"
+          - name: rt_pam
+            description: "Performance accumulée sur la période"
+          - name: mt_pnl
+            description: "P&L en devise locale"
+          - name: pc_twr
+            description: "Time-weighted return de la position"
 
       - name: st0_fct_xrt
-        description: "Taux de change journaliers. Une ligne par devise et par date."
+        description: "Taux de change journaliers bruts. Une ligne par devise et par date."
         columns:
           - name: cd_fct_xrt
-            description: "Identifiant technique du taux"
+            description: "Identifiant unique du taux (CD_CCY_YYYYMMDD)"
           - name: cd_ccy
             description: "Code devise source"
           - name: dt_fct
@@ -139,7 +151,7 @@ sources:
           - name: rt_fac
             description: "Facteur de conversion"
           - name: rt_val
-            description: "Valeur du taux vers la devise de référence"
+            description: "Valeur du taux vers CHF (devise de référence banque)"
 
       - name: st0_fct_xrt_prices
         description: "Taux de change et prix de marché journaliers. Une ligne par instrument et par date."

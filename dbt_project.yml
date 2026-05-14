@@ -39,7 +39,12 @@ vars:
 models:
   banking_pipeline:
     staging:
-      +materialized: view
+      dimensions:
+        +tags: ['dim', 'staging']
+        +materialized: incremental
+      faits:
+        +tags: ['fct', 'staging']
+        +materialized: incremental
     intermediate:
       +materialized: view
     marts:

@@ -537,82 +537,113 @@ models:
           - not_null
 
   - name: stg_fct_ast
-    description: "Positions d'actifs extraites du core banking. Une ligne par position et par date de valorisation."
+    description: "Positions d'actifs avec métadonnées techniques STG. Colonnes _PTF, _CLI, _REF calculées en couche int_. Modèle incrémental."
+    config:
+      materialized: incremental
     columns:
-      - name: fct_ast_id
-        description: "Identifiant technique unique de la position"
+      - name: id_stg_fct_ast
+        description: "Identifiant technique unique séquentiel"
         tests:
           - not_null
           - unique
-      - name: pos_id
-        description: "Identifiant de la position"
+      - name: ts_stg
         tests:
           - not_null
-      - name: pos_typ_id
-        description: "Type de position"
+      - name: vr_stg
         tests:
           - not_null
-      - name: ptf_id
-        description: "Portefeuille de rattachement"
+      - name: id_obj_tec
+        description: "Identifiant objet technique (1019 = position actif)"
+        tests:
+          - not_null
+      - name: cd_src
+        tests:
+          - not_null
+      - name: cd_pid
+        tests:
+          - not_null
+      - name: lb_dsc
+        description: "Description libre"
+      - name: cd_fct_ast
+        description: "Identifiant unique de la position"
+        tests:
+          - not_null
+          - unique
+      - name: cd_pos
+        description: "Code de la position"
+        tests:
+          - not_null
+      - name: cd_pos_typ
+        description: "Type de position (T/C)"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['T', 'C']
+      - name: cd_ptf
+        description: "Portefeuille"
         tests:
           - not_null
           - relationships:
               arguments:
                 to: ref('stg_ptf')
-                field: ptf_id
-      - name: asset_id
-        description: "Identifiant de l'actif"
-        tests:
-          - not_null
-      - name: currency
-        description: "Devise de la position"
-        tests:
-          - not_null
-          - accepted_values:
-              arguments:
-                values: ['USD', 'CHF', 'EUR', 'GBP']
-      - name: quantity
-        description: "Quantité détenue"
-        tests:
-          - not_null
-      - name: amount
-        description: "Valorisation de la position en devise locale"
-        tests:
-          - not_null
-      - name: amount_ptf
-        description: "Valorisation en devise du portefeuille"
-        tests:
-          - not_null
-      - name: amount_cli
-        description: "Valorisation en devise du client"
-        tests:
-          - not_null
-      - name: amount_ref
-        description: "Valorisation en devise de référence — source unique pour les calculs AUM cross-currency"
-        tests:
-          - not_null
-      - name: accrued_interest_ref
-        description: "Intérêts courus en devise de référence"
-        tests:
-          - not_null
-      - name: pnl_ref
-        description: "P&L de la période en devise de référence"
-        tests:
-          - not_null
-      - name: net_change_ref
-        description: "Variation nette de la position en devise de référence"
-        tests:
-          - not_null
-      - name: weight_ptf
-        description: "Poids de la position dans le portefeuille (RT_PRM)"
-        tests:
-          - not_null
-      - name: value_date
+                field: cd_ptf
+      - name: dt_fct
         description: "Date de valorisation"
         tests:
           - not_null
-      - name: loaded_at
-        description: "Date de chargement en staging"
+      - name: cd_ccy
+        description: "Devise de la position"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_ccy')
+                field: cd_ccy
+      - name: cd_ins
+        description: "Instrument financier"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_ins')
+                field: cd_ins
+      - name: cd_ast
+        description: "Actif financier"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_ast')
+                field: cd_ast
+      - name: lb_fct_ast
+        description: "Libellé de la position"
+      - name: qt_ast
+        description: "Quantité détenue"
+        tests:
+          - not_null
+      - name: mt_ast
+        description: "Valorisation en devise locale"
+        tests:
+          - not_null
+      - name: mt_aci
+        description: "Intérêts courus en devise locale"
+        tests:
+          - not_null
+      - name: rt_prm
+        description: "Poids dans le portefeuille"
+        tests:
+          - not_null
+      - name: rt_pam
+        description: "Performance accumulée"
+        tests:
+          - not_null
+      - name: mt_pnl
+        description: "P&L en devise locale"
+        tests:
+          - not_null
+      - name: pc_twr
+        description: "Time-weighted return"
         tests:
           - not_null
 
@@ -1277,3 +1308,57 @@ models:
         description: "Description longue de l'actif"
       - name: cd_rat
         description: "Code de notation financière (null pour les actions)"
+
+  - name: stg_fct_xrt
+    description: "Taux de change avec métadonnées techniques STG. Modèle incrémental — nouveaux taux ajoutés à chaque run, taux existants immuables."
+    config:
+      materialized: incremental
+    columns:
+      - name: id_stg_fct_xrt
+        description: "Identifiant technique unique séquentiel"
+        tests:
+          - not_null
+          - unique
+      - name: ts_stg
+        tests:
+          - not_null
+      - name: vr_stg
+        tests:
+          - not_null
+      - name: id_obj_tec
+        description: "Identifiant objet technique (1018 = taux de change)"
+        tests:
+          - not_null
+      - name: cd_src
+        tests:
+          - not_null
+      - name: cd_pid
+        tests:
+          - not_null
+      - name: lb_dsc
+        description: "Description libre"
+      - name: cd_fct_xrt
+        description: "Identifiant unique du taux (CD_CCY_YYYYMMDD)"
+        tests:
+          - not_null
+          - unique
+      - name: cd_ccy
+        description: "Code devise source"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_ccy')
+                field: cd_ccy
+      - name: dt_fct
+        description: "Date du taux"
+        tests:
+          - not_null
+      - name: rt_fac
+        description: "Facteur de conversion"
+        tests:
+          - not_null
+      - name: rt_val
+        description: "Valeur du taux vers CHF"
+        tests:
+          - not_null
