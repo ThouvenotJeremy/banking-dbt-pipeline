@@ -74,34 +74,46 @@ sources:
             description: "Indicateur prêt (Y/N)"
 
       - name: st0_fct_ope
-        description: "Transactions financières brutes. Une ligne par opération."
+        description: "Opérations financières brutes. Une ligne par opération. Fact immuable."
         columns:
           - name: cd_fct_ope
-            description: "Identifiant technique unique de l'opération"
+            description: "Identifiant unique de l'opération"
           - name: cd_ope
             description: "Code métier de l'opération"
-          - name: cd_ptf
-            description: "Code du portefeuille de rattachement"
-          - name: cd_ast
-            description: "Code de l'actif (titre, instrument)"
-          - name: cd_ccy_ope
-            description: "Code devise de l'opération"
+          - name: nb_seq_ptc
+            description: "Numéro de séquence pour les opérations splitées"
+          - name: lb_fct_ope
+            description: "Libellé de l'opération"
+          - name: cd_fct_ope_ext
+            description: "Référence externe (null si interne)"
           - name: cd_ope_typ
-            description: "Type d'opération (BUY, SELL)"
-          - name: dt_cta
-            description: "Date comptable de l'opération"
-          - name: dt_val
-            description: "Date de valeur de l'opération"
-          - name: qt_ope
-            description: "Quantité de titres échangés"
-          - name: mt_ope
-            description: "Montant brut en devise locale"
-          - name: mt_ope_ref
-            description: "Montant en devise de référence"
+            description: "Type d'opération"
+          - name: cd_deb_crd
+            description: "Sens débit (D) ou crédit (C)"
           - name: yn_pro
-            description: "Indicateur d'opération provisoire (Y/N)"
-          - name: ts_stg
-            description: "Horodatage de chargement en staging"
+            description: "Opération provisoire (Y) ou définitive (N)"
+          - name: cd_pos
+            description: "Position concernée"
+          - name: cd_ptf
+            description: "Portefeuille de rattachement"
+          - name: cd_ccy_ope
+            description: "Devise de l'opération"
+          - name: cd_ast
+            description: "Actif concerné"
+          - name: cd_ins
+            description: "Instrument concerné"
+          - name: dt_cta
+            description: "Date comptable"
+          - name: dt_exe
+            description: "Date d'exécution"
+          - name: dt_val
+            description: "Date de valeur"
+          - name: qt_ope
+            description: "Quantité de titres"
+          - name: mt_ope
+            description: "Montant brut en devise de l'opération"
+          - name: mt_net
+            description: "Montant net en devise de l'opération (après frais)"
 
       - name: st0_fct_ast
         description: "Positions d'actifs brutes issues du core banking. Une ligne par position et par date de valorisation."
@@ -177,56 +189,92 @@ sources:
             description: "Code du groupe d'instruments (EQU, BND, CSH, ETF)"
 
       - name: st0_fct_ptf
-        description: "Performance portefeuille mensuelle brute. Une ligne par portefeuille et par mois."
+        description: "Performance mensuelle des portefeuilles brute. Une ligne par portefeuille et par date. Valeurs en devise du portefeuille uniquement — les variantes _REF et _CLI calculées en int_."
         columns:
           - name: cd_fct_ptf
-            description: "Identifiant technique unique du fait portefeuille"
+            description: "Identifiant unique du fait (FCT-CD_PTF-YYYYMMDD)"
           - name: cd_ptf
-            description: "Code du portefeuille"
+            description: "Portefeuille de rattachement"
           - name: dt_fct
-            description: "Date de fin de mois du fait"
-          - name: mt_net_ref
-            description: "Actif net en devise de référence"
-          - name: mt_aci_ref
-            description: "Actif net corrigé des intérêts courus en devise de référence"
-          - name: mt_lia_ref
-            description: "Passif en devise de référence"
-          - name: mt_pnl_ref
-            description: "Résultat (P&L) en devise de référence"
-          - name: mt_inc_ref_mtd
-            description: "Flux entrants month-to-date en devise de référence"
-          - name: mt_out_ref_mtd
-            description: "Flux sortants month-to-date en devise de référence"
-          - name: mt_nnm_inc_ref_mtd
-            description: "NNM entrant month-to-date en devise de référence"
-          - name: mt_nnm_out_ref_mtd
-            description: "NNM sortant month-to-date en devise de référence"
-          - name: ts_stg
-            description: "Horodatage de chargement en staging"
+            description: "Date de fait (fin de mois)"
+          - name: pc_ptf
+            description: "Poids du portefeuille dans l'AUM total (ratio 0-1)"
+          - name: mt_net
+            description: "Actif net en devise du portefeuille"
+          - name: mt_aci
+            description: "Intérêts courus en devise du portefeuille"
+          - name: mt_lia
+            description: "Passif en devise du portefeuille"
+          - name: mt_pnl
+            description: "P&L en devise du portefeuille"
+          - name: mt_pnc
+            description: "Variation nette en devise du portefeuille"
+          - name: mt_inc_ytd
+            description: "Flux entrants YTD en devise du portefeuille"
+          - name: mt_out_ytd
+            description: "Flux sortants YTD en devise du portefeuille"
+          - name: mt_nnm_inc_ytd
+            description: "NNM entrant YTD en devise du portefeuille"
+          - name: mt_nnm_out_ytd
+            description: "NNM sortant YTD en devise du portefeuille"
+          - name: mt_int_inc_ytd
+            description: "Flux intérêts entrants YTD en devise du portefeuille"
+          - name: mt_int_out_ytd
+            description: "Flux intérêts sortants YTD en devise du portefeuille"
+          - name: mt_inc_mtd
+            description: "Flux entrants MTD en devise du portefeuille"
+          - name: mt_out_mtd
+            description: "Flux sortants MTD en devise du portefeuille"
+          - name: mt_nnm_inc_mtd
+            description: "NNM entrant MTD en devise du portefeuille"
+          - name: mt_nnm_out_mtd
+            description: "NNM sortant MTD en devise du portefeuille"
+          - name: mt_int_inc_mtd
+            description: "Flux intérêts entrants MTD en devise du portefeuille"
+          - name: mt_int_out_mtd
+            description: "Flux intérêts sortants MTD en devise du portefeuille"
+          - name: mt_inc_dtd
+            description: "Flux entrants DTD en devise du portefeuille"
+          - name: mt_out_dtd
+            description: "Flux sortants DTD en devise du portefeuille"
+          - name: mt_nnm_inc_dtd
+            description: "NNM entrant DTD en devise du portefeuille"
+          - name: mt_nnm_out_dtd
+            description: "NNM sortant DTD en devise du portefeuille"
+          - name: mt_int_inc_dtd
+            description: "Flux intérêts entrants DTD en devise du portefeuille"
+          - name: mt_int_out_dtd
+            description: "Flux intérêts sortants DTD en devise du portefeuille"
 
       - name: st0_fct_mvt
-        description: "Mouvements liés aux opérations financières. Une ligne par mouvement."
+        description: "Mouvements financiers bruts. Deux lignes par opération (titres + cash). Fact immuable."
         columns:
           - name: cd_fct_mvt
-            description: "Identifiant technique unique du mouvement"
+            description: "Identifiant unique du mouvement"
+          - name: cd_pos
+            description: "Position concernée"
           - name: cd_fct_ope
-            description: "Identifiant de l'opération source"
-          - name: cd_ptf
-            description: "Code du portefeuille de rattachement"
-          - name: cd_ast
-            description: "Code de l'actif concerné"
+            description: "Opération source du mouvement"
+          - name: yn_ext
+            description: "Mouvement externe (Y) ou interne (N)"
+          - name: dt_cta
+            description: "Date comptable"
+          - name: id_obj_mvt_cat
+            description: "Catégorie du mouvement (1=titres, 2=cash)"
           - name: cd_mvt_typ
             description: "Type de mouvement"
-          - name: dt_cta
-            description: "Date comptable / de valeur du mouvement"
-          - name: mt_mvt
-            description: "Montant du mouvement en devise locale"
-          - name: mt_mvt_ref
-            description: "Montant du mouvement en devise de référence"
+          - name: cd_ptf
+            description: "Portefeuille de rattachement"
+          - name: cd_mvt_res
+            description: "Mode de règlement (CSH=cash, SEC=titres)"
+          - name: cd_ast
+            description: "Actif concerné"
+          - name: cd_ins
+            description: "Instrument concerné"
           - name: cd_ccy_mvt
-            description: "Code devise du mouvement"
-          - name: ts_stg
-            description: "Horodatage de chargement en staging"
+            description: "Devise du mouvement"
+          - name: mt_mvt
+            description: "Montant en devise du mouvement (négatif si sortie)"
 
       - name: st0_ccy
         description: "Référentiel des devises brut. Une ligne par devise."

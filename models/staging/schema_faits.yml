@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: stg_fct_ope
-    description: "Opérations financières brutes avec métadonnées techniques STG. Une ligne par opération. Modèle incrémental."
+    description: "Opérations financières avec métadonnées STG. Fact immuable. MT_OPE_PTF, MT_OPE_REF, MT_NET_PTF, MT_NET_REF calculés en int_."
     config:
       materialized: incremental
     columns:
@@ -12,70 +12,98 @@ models:
           - not_null
           - unique
       - name: ts_stg
-        description: "Timestamp de chargement"
         tests:
           - not_null
       - name: vr_stg
-        description: "Version YYYYMMDD"
         tests:
           - not_null
       - name: id_obj_tec
-        description: "Identifiant objet technique (1020 = opération)"
+        description: "Identifiant objet technique (1021 = opération)"
         tests:
           - not_null
       - name: cd_src
-        description: "Source des données"
         tests:
           - not_null
       - name: cd_pid
-        description: "Identifiant d'exécution dbt"
         tests:
           - not_null
       - name: lb_dsc
         description: "Description libre"
       - name: cd_fct_ope
-        description: "Identifiant technique unique de l'opération"
+        description: "Identifiant unique de l'opération"
         tests:
           - not_null
           - unique
       - name: cd_ope
-        description: "Code métier de l'opération"
+        description: "Code métier"
+        tests:
+          - not_null
+      - name: nb_seq_ptc
+        description: "Numéro de séquence"
+        tests:
+          - not_null
+      - name: lb_fct_ope
+        description: "Libellé de l'opération"
+      - name: cd_fct_ope_ext
+        description: "Référence externe"
+      - name: cd_ope_typ
+        description: "Type d'opération"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_ope_typ')
+                field: cd_ope_typ
+      - name: cd_deb_crd
+        description: "Sens débit/crédit"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['D', 'C']
+      - name: yn_pro
+        description: "Provisoire ou définitif"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Y', 'N']
+      - name: cd_pos
+        description: "Position concernée"
         tests:
           - not_null
       - name: cd_ptf
-        description: "Portefeuille de rattachement"
+        description: "Portefeuille"
         tests:
           - not_null
           - relationships:
               arguments:
                 to: ref('stg_ptf')
                 field: cd_ptf
-      - name: cd_ast
-        description: "Identifiant de l'actif"
-        tests:
-          - not_null
       - name: cd_ccy_ope
         description: "Devise de l'opération"
         tests:
           - not_null
-          - accepted_values:
+          - relationships:
               arguments:
-                values: ['USD', 'CHF', 'EUR', 'GBP']
-      - name: cd_ope_typ
-        description: "Type d'opération"
+                to: ref('stg_ccy')
+                field: cd_ccy
+      - name: cd_ast
+        description: "Actif"
         tests:
           - not_null
-      - name: cd_deb_crd
-        description: "Sens de l'opération : D (débit) ou C (crédit)"
-        tests:
-          - not_null
-          - accepted_values:
+          - relationships:
               arguments:
-                values: ['D', 'C']
-      - name: cd_pos
-        description: "Code de la position"
+                to: ref('stg_ast')
+                field: cd_ast
+      - name: cd_ins
+        description: "Instrument"
         tests:
           - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_ins')
+                field: cd_ins
       - name: dt_cta
         description: "Date comptable"
         tests:
@@ -89,43 +117,20 @@ models:
         tests:
           - not_null
       - name: qt_ope
-        description: "Quantité d'opération"
+        description: "Quantité"
         tests:
           - not_null
       - name: mt_ope
-        description: "Montant en devise locale"
-        tests:
-          - not_null
-      - name: mt_ope_ref
-        description: "Montant en devise de référence"
-        tests:
-          - not_null
-      - name: mt_ope_ptf
-        description: "Montant en devise portefeuille"
+        description: "Montant brut en devise de l'opération"
         tests:
           - not_null
       - name: mt_net
-        description: "Montant net (après frais)"
+        description: "Montant net en devise de l'opération"
         tests:
           - not_null
-      - name: mt_net_ref
-        description: "Montant net en devise de référence"
-        tests:
-          - not_null
-      - name: mt_net_ptf
-        description: "Montant net en devise portefeuille"
-        tests:
-          - not_null
-      - name: yn_pro
-        description: "Indicateur opération provisoire (Y/N)"
-        tests:
-          - not_null
-          - accepted_values:
-              arguments:
-                values: ['Y', 'N']
 
   - name: stg_fct_ptf
-    description: "Performance mensuelle des portefeuilles. Une ligne par portefeuille et par date. Modèle incrémental."
+    description: "Performance mensuelle des portefeuilles en devise du portefeuille. Fact immuable. Les variantes _REF (CHF) et _CLI sont calculées en int_."
     config:
       materialized: incremental
     columns:
@@ -135,29 +140,25 @@ models:
           - not_null
           - unique
       - name: ts_stg
-        description: "Timestamp de chargement"
         tests:
           - not_null
       - name: vr_stg
-        description: "Version YYYYMMDD"
         tests:
           - not_null
       - name: id_obj_tec
-        description: "Identifiant objet technique (1021 = performance portefeuille)"
+        description: "Identifiant objet technique (1020 = fait portefeuille)"
         tests:
           - not_null
       - name: cd_src
-        description: "Source des données"
         tests:
           - not_null
       - name: cd_pid
-        description: "Identifiant d'exécution dbt"
         tests:
           - not_null
       - name: lb_dsc
         description: "Description libre"
       - name: cd_fct_ptf
-        description: "Identifiant unique du fait portefeuille"
+        description: "Identifiant unique du fait"
         tests:
           - not_null
           - unique
@@ -170,68 +171,108 @@ models:
                 to: ref('stg_ptf')
                 field: cd_ptf
       - name: dt_fct
-        description: "Date du fait (fin de mois)"
+        description: "Date de fait"
         tests:
           - not_null
-      - name: mt_net_ref
-        description: "Actif net en devise de référence"
+      - name: pc_ptf
+        description: "Poids du portefeuille dans l'AUM total"
         tests:
           - not_null
-      - name: mt_aci_ref
-        description: "Intérêts courus en devise de référence"
+      - name: mt_net
+        description: "Actif net en devise du portefeuille"
         tests:
           - not_null
-      - name: mt_lia_ref
-        description: "Passif en devise de référence"
+      - name: mt_aci
+        description: "Intérêts courus en devise du portefeuille"
         tests:
           - not_null
-      - name: mt_net_ptf
-        description: "Actif net en devise portefeuille"
+      - name: mt_lia
+        description: "Passif en devise du portefeuille"
         tests:
           - not_null
-      - name: mt_aci_ptf
-        description: "Intérêts courus en devise portefeuille"
+      - name: mt_pnl
+        description: "P&L en devise du portefeuille"
         tests:
           - not_null
-      - name: mt_lia_ptf
-        description: "Passif en devise portefeuille"
+      - name: mt_pnc
+        description: "Variation nette en devise du portefeuille"
         tests:
           - not_null
-      - name: mt_pnl_ref
-        description: "P&L en devise de référence"
+      - name: mt_inc_ytd
+        description: "Flux entrants YTD en devise du portefeuille"
         tests:
           - not_null
-      - name: mt_pnl_ptf
-        description: "P&L en devise portefeuille"
+      - name: mt_out_ytd
+        description: "Flux sortants YTD en devise du portefeuille"
         tests:
           - not_null
-      - name: mt_inc_ref
-        description: "Flux entrants en devise de référence"
+      - name: mt_nnm_inc_ytd
+        description: "NNM entrant YTD en devise du portefeuille"
         tests:
           - not_null
-      - name: mt_out_ref
-        description: "Flux sortants en devise de référence"
+      - name: mt_nnm_out_ytd
+        description: "NNM sortant YTD en devise du portefeuille"
         tests:
           - not_null
-      - name: mt_nnm_inc_ref
-        description: "NNM entrant en devise de référence"
+      - name: mt_int_inc_ytd
+        description: "Flux intérêts entrants YTD en devise du portefeuille"
         tests:
           - not_null
-      - name: mt_nnm_out_ref
-        description: "NNM sortant en devise de référence"
+      - name: mt_int_out_ytd
+        description: "Flux intérêts sortants YTD en devise du portefeuille"
         tests:
           - not_null
-      - name: mt_int_inc_ref
-        description: "Flux d'intérêts entrants"
+      - name: mt_inc_mtd
+        description: "Flux entrants MTD en devise du portefeuille"
         tests:
           - not_null
-      - name: mt_int_out_ref
-        description: "Flux d'intérêts sortants"
+      - name: mt_out_mtd
+        description: "Flux sortants MTD en devise du portefeuille"
+        tests:
+          - not_null
+      - name: mt_nnm_inc_mtd
+        description: "NNM entrant MTD en devise du portefeuille"
+        tests:
+          - not_null
+      - name: mt_nnm_out_mtd
+        description: "NNM sortant MTD en devise du portefeuille"
+        tests:
+          - not_null
+      - name: mt_int_inc_mtd
+        description: "Flux intérêts entrants MTD en devise du portefeuille"
+        tests:
+          - not_null
+      - name: mt_int_out_mtd
+        description: "Flux intérêts sortants MTD en devise du portefeuille"
+        tests:
+          - not_null
+      - name: mt_inc_dtd
+        description: "Flux entrants DTD en devise du portefeuille"
+        tests:
+          - not_null
+      - name: mt_out_dtd
+        description: "Flux sortants DTD en devise du portefeuille"
+        tests:
+          - not_null
+      - name: mt_nnm_inc_dtd
+        description: "NNM entrant DTD en devise du portefeuille"
+        tests:
+          - not_null
+      - name: mt_nnm_out_dtd
+        description: "NNM sortant DTD en devise du portefeuille"
+        tests:
+          - not_null
+      - name: mt_int_inc_dtd
+        description: "Flux intérêts entrants DTD en devise du portefeuille"
+        tests:
+          - not_null
+      - name: mt_int_out_dtd
+        description: "Flux intérêts sortants DTD en devise du portefeuille"
         tests:
           - not_null
 
   - name: stg_fct_mvt
-    description: "Mouvements liés aux opérations. Une ligne par mouvement. Modèle incrémental."
+    description: "Mouvements financiers avec métadonnées STG. Deux lignes par opération (titres + cash). Fact immuable. MT_MVT_REF calculé en int_."
     config:
       materialized: incremental
     columns:
@@ -241,11 +282,9 @@ models:
           - not_null
           - unique
       - name: ts_stg
-        description: "Timestamp de chargement"
         tests:
           - not_null
       - name: vr_stg
-        description: "Version YYYYMMDD"
         tests:
           - not_null
       - name: id_obj_tec
@@ -253,11 +292,9 @@ models:
         tests:
           - not_null
       - name: cd_src
-        description: "Source des données"
         tests:
           - not_null
       - name: cd_pid
-        description: "Identifiant d'exécution dbt"
         tests:
           - not_null
       - name: lb_dsc
@@ -267,8 +304,35 @@ models:
         tests:
           - not_null
           - unique
+      - name: cd_pos
+        description: "Position concernée"
+        tests:
+          - not_null
       - name: cd_fct_ope
         description: "Opération source"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_fct_ope')
+                field: cd_fct_ope
+      - name: yn_ext
+        description: "Externe ou interne"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Y', 'N']
+      - name: dt_cta
+        description: "Date comptable"
+        tests:
+          - not_null
+      - name: id_obj_mvt_cat
+        description: "Catégorie du mouvement"
+        tests:
+          - not_null
+      - name: cd_mvt_typ
+        description: "Type de mouvement"
         tests:
           - not_null
       - name: cd_ptf
@@ -279,48 +343,41 @@ models:
               arguments:
                 to: ref('stg_ptf')
                 field: cd_ptf
-      - name: cd_ast
-        description: "Actif concerné"
-        tests:
-          - not_null
-      - name: cd_mvt_typ
-        description: "Type de mouvement"
-        tests:
-          - not_null
       - name: cd_mvt_res
-        description: "Type de résolution (ex: CSH pour cash)"
-        tests:
-          - not_null
-      - name: cd_pos
-        description: "Position concernée"
-        tests:
-          - not_null
-      - name: yn_ext
-        description: "Mouvement externe (Y/N)"
+        description: "Mode de règlement"
         tests:
           - not_null
           - accepted_values:
               arguments:
-                values: ['Y', 'N']
-      - name: dt_val
-        description: "Date de valeur"
+                values: ['CSH', 'SEC']
+      - name: cd_ast
+        description: "Actif"
         tests:
           - not_null
-      - name: mt_mvt
-        description: "Montant en devise locale"
+          - relationships:
+              arguments:
+                to: ref('stg_ast')
+                field: cd_ast
+      - name: cd_ins
+        description: "Instrument"
         tests:
           - not_null
-      - name: mt_mvt_ref
-        description: "Montant en devise de référence"
-        tests:
-          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_ins')
+                field: cd_ins
       - name: cd_ccy_mvt
         description: "Devise du mouvement"
         tests:
           - not_null
-          - accepted_values:
+          - relationships:
               arguments:
-                values: ['USD', 'CHF', 'EUR', 'GBP']
+                to: ref('stg_ccy')
+                field: cd_ccy
+      - name: mt_mvt
+        description: "Montant en devise du mouvement"
+        tests:
+          - not_null
 
   - name: stg_fct_ast
     description: "Positions d'actifs avec métadonnées techniques STG. Colonnes calculées en couche int_. Modèle incrémental."
