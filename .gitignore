@@ -6,3 +6,13 @@ profiles.yml
 *.duckdb
 .venv/
 .DS_Store
+
+cat >> .gitignore << 'EOF'
+
+# Airflow / Astro
+orchestration/airflow/.astro/
+orchestration/airflow/include/
+orchestration/airflow/logs/
+orchestration/airflow/airflow_settings.yaml
+**/__pycache__/
+EOF
