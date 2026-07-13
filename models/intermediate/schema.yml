@@ -243,26 +243,53 @@ models:
         description: "Valorisation en devise du portefeuille"
         tests:
           - not_null
+          - currency_pivot_conversion_consistency:
+              arguments:
+                native_column: mt_ast
+                rate_column: xrt_rate_pos
+                pivot_rate_column: xrt_rate_ptf
       - name: mt_aci_ptf
         description: "Intérêts courus en devise du portefeuille"
         tests:
           - not_null
+          - currency_pivot_conversion_consistency:
+              arguments:
+                native_column: mt_aci
+                rate_column: xrt_rate_pos
+                pivot_rate_column: xrt_rate_ptf
       - name: mt_pnl_ptf
         description: "P&L en devise du portefeuille"
         tests:
           - not_null
+          - currency_pivot_conversion_consistency:
+              arguments:
+                native_column: mt_pnl
+                rate_column: xrt_rate_pos
+                pivot_rate_column: xrt_rate_ptf
       - name: mt_ast_ref
         description: "Valorisation en CHF (devise de référence banque)"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_ast
+                rate_column: xrt_rate_pos
       - name: mt_aci_ref
         description: "Intérêts courus en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_aci
+                rate_column: xrt_rate_pos
       - name: mt_pnl_ref
         description: "P&L en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_pnl
+                rate_column: xrt_rate_pos
       - name: rt_prm
         description: "Poids de la position dans le portefeuille"
         tests:
@@ -379,18 +406,36 @@ models:
         description: "Montant brut en devise du portefeuille"
         tests:
           - not_null
+          - currency_pivot_conversion_consistency:
+              arguments:
+                native_column: mt_ope
+                rate_column: xrt_rate_ope
+                pivot_rate_column: xrt_rate_ptf
       - name: mt_net_ptf
         description: "Montant net en devise du portefeuille"
         tests:
           - not_null
+          - currency_pivot_conversion_consistency:
+              arguments:
+                native_column: mt_net
+                rate_column: xrt_rate_ope
+                pivot_rate_column: xrt_rate_ptf
       - name: mt_ope_ref
         description: "Montant brut en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_ope
+                rate_column: xrt_rate_ope
       - name: mt_net_ref
         description: "Montant net en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_net
+                rate_column: xrt_rate_ope
 
   - name: int_fct_mvt
     description: "Mouvements enrichis : client + montant converti en devise portefeuille (_PTF via pivot CHF) et en CHF (_REF), aux taux de la date comptable. Modèle incrémental."
@@ -474,10 +519,19 @@ models:
         description: "Montant en devise du portefeuille"
         tests:
           - not_null
+          - currency_pivot_conversion_consistency:
+              arguments:
+                native_column: mt_mvt
+                rate_column: xrt_rate_mvt
+                pivot_rate_column: xrt_rate_ptf
       - name: mt_mvt_ref
         description: "Montant en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_mvt
+                rate_column: xrt_rate_mvt
 
   - name: int_fct_ptf
     description: "Performance mensuelle des portefeuilles enrichie : client + montants natifs (devise portefeuille) et convertis en CHF (_ref), aux taux de la date de fait. Horizons YTD/MTD/DTD. Modèle incrémental."
@@ -525,6 +579,10 @@ models:
         description: "Actif net en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_net
+                rate_column: xrt_rate
       - name: mt_aci
         description: "Intérêts courus en devise portefeuille"
         tests:
@@ -533,6 +591,10 @@ models:
         description: "Intérêts courus en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_aci
+                rate_column: xrt_rate
       - name: mt_lia
         description: "Passif en devise portefeuille"
         tests:
@@ -541,6 +603,10 @@ models:
         description: "Passif en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_lia
+                rate_column: xrt_rate
       - name: mt_pnl
         description: "P&L en devise portefeuille"
         tests:
@@ -549,6 +615,10 @@ models:
         description: "P&L en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_pnl
+                rate_column: xrt_rate
       - name: mt_pnc
         description: "Variation nette en devise portefeuille"
         tests:
@@ -557,6 +627,10 @@ models:
         description: "Variation nette en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_pnc
+                rate_column: xrt_rate
       - name: mt_inc_ytd
         description: "Flux entrants YTD en devise portefeuille"
         tests:
@@ -565,6 +639,10 @@ models:
         description: "Flux entrants YTD en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_inc_ytd
+                rate_column: xrt_rate
       - name: mt_out_ytd
         description: "Flux sortants YTD en devise portefeuille"
         tests:
@@ -573,6 +651,10 @@ models:
         description: "Flux sortants YTD en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_out_ytd
+                rate_column: xrt_rate
       - name: mt_nnm_inc_ytd
         description: "NNM entrant YTD en devise portefeuille"
         tests:
@@ -581,6 +663,10 @@ models:
         description: "NNM entrant YTD en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_nnm_inc_ytd
+                rate_column: xrt_rate
       - name: mt_nnm_out_ytd
         description: "NNM sortant YTD en devise portefeuille"
         tests:
@@ -589,6 +675,10 @@ models:
         description: "NNM sortant YTD en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_nnm_out_ytd
+                rate_column: xrt_rate
       - name: mt_int_inc_ytd
         description: "Flux intérêts entrants YTD en devise portefeuille"
         tests:
@@ -597,6 +687,10 @@ models:
         description: "Flux intérêts entrants YTD en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_int_inc_ytd
+                rate_column: xrt_rate
       - name: mt_int_out_ytd
         description: "Flux intérêts sortants YTD en devise portefeuille"
         tests:
@@ -605,6 +699,10 @@ models:
         description: "Flux intérêts sortants YTD en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_int_out_ytd
+                rate_column: xrt_rate
       - name: mt_inc_mtd
         description: "Flux entrants MTD en devise portefeuille"
         tests:
@@ -613,6 +711,10 @@ models:
         description: "Flux entrants MTD en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_inc_mtd
+                rate_column: xrt_rate
       - name: mt_out_mtd
         description: "Flux sortants MTD en devise portefeuille"
         tests:
@@ -621,6 +723,10 @@ models:
         description: "Flux sortants MTD en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_out_mtd
+                rate_column: xrt_rate
       - name: mt_nnm_inc_mtd
         description: "NNM entrant MTD en devise portefeuille"
         tests:
@@ -629,6 +735,10 @@ models:
         description: "NNM entrant MTD en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_nnm_inc_mtd
+                rate_column: xrt_rate
       - name: mt_nnm_out_mtd
         description: "NNM sortant MTD en devise portefeuille"
         tests:
@@ -637,6 +747,10 @@ models:
         description: "NNM sortant MTD en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_nnm_out_mtd
+                rate_column: xrt_rate
       - name: mt_int_inc_mtd
         description: "Flux intérêts entrants MTD en devise portefeuille"
         tests:
@@ -645,6 +759,10 @@ models:
         description: "Flux intérêts entrants MTD en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_int_inc_mtd
+                rate_column: xrt_rate
       - name: mt_int_out_mtd
         description: "Flux intérêts sortants MTD en devise portefeuille"
         tests:
@@ -653,6 +771,10 @@ models:
         description: "Flux intérêts sortants MTD en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_int_out_mtd
+                rate_column: xrt_rate
       - name: mt_inc_dtd
         description: "Flux entrants DTD en devise portefeuille"
         tests:
@@ -661,6 +783,10 @@ models:
         description: "Flux entrants DTD en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_inc_dtd
+                rate_column: xrt_rate
       - name: mt_out_dtd
         description: "Flux sortants DTD en devise portefeuille"
         tests:
@@ -669,6 +795,10 @@ models:
         description: "Flux sortants DTD en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_out_dtd
+                rate_column: xrt_rate
       - name: mt_nnm_inc_dtd
         description: "NNM entrant DTD en devise portefeuille"
         tests:
@@ -677,6 +807,10 @@ models:
         description: "NNM entrant DTD en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_nnm_inc_dtd
+                rate_column: xrt_rate
       - name: mt_nnm_out_dtd
         description: "NNM sortant DTD en devise portefeuille"
         tests:
@@ -685,6 +819,10 @@ models:
         description: "NNM sortant DTD en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_nnm_out_dtd
+                rate_column: xrt_rate
       - name: mt_int_inc_dtd
         description: "Flux intérêts entrants DTD en devise portefeuille"
         tests:
@@ -693,6 +831,10 @@ models:
         description: "Flux intérêts entrants DTD en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_int_inc_dtd
+                rate_column: xrt_rate
       - name: mt_int_out_dtd
         description: "Flux intérêts sortants DTD en devise portefeuille"
         tests:
@@ -701,6 +843,10 @@ models:
         description: "Flux intérêts sortants DTD en CHF"
         tests:
           - not_null
+          - currency_conversion_consistency:
+              arguments:
+                native_column: mt_int_out_dtd
+                rate_column: xrt_rate
 
 
   - name: int_ins
