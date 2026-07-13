@@ -1,15 +1,15 @@
 {{
     config(
         materialized='table',
-        cluster_by=['DT_FCT', 'CLIENT_ID'],
+        cluster_by=['DT_FCT', 'CD_CLI'],
         post_hook=[
             "{% if target.type == 'snowflake' %}grant select on {{ this }} to role BI_READ_ONLY{% endif %}"
         ]
     )
 }}
 
-with ptf_idx as (
-    select * from {{ ref('int_ptf_idx') }}
+with fct_ast as (
+    select * from {{ ref('int_fct_ast') }}
 ),
 cli as (
     select * from {{ ref('int_cli') }}
@@ -20,62 +20,61 @@ ptf as (
 
 daily_aum as (
     select
-        ptf_idx.dt_fct,
-        ptf_idx.client_id,
-        ptf_idx.ptf_id,
-        ptf.ptf_name,
-        cli.client_name,
-        cli.client_category,
-        cli.client_category_name,
-        cli.country,
-        cli.country_name,
-        cli.currency                as client_currency,
-        ptf.manager_id,
-        ptf.manager_name,
-        ptf.risk_profile,
-        ptf.risk_profile_name,
+        fct_ast.dt_fct,
+        fct_ast.cd_cli,
+        fct_ast.cd_ptf,
+        ptf.lb_ptf,
+        cli.lb_cli,
+        cli.cd_cli_cat,
+        cli.lb_cli_cat,
+        cli.cd_cty_dom,
+        cli.lb_cty_dom,
+        cli.cd_ccy                  as cd_ccy_cli,
+        ptf.cd_mng,
+        ptf.lb_mng,
+        ptf.cd_prf,
+        ptf.lb_prf,
         current_date                as performance_date,
-        sum(ptf_idx.amount_position_ref) as aum
-    from ptf_idx
-    inner join ptf on ptf_idx.ptf_id    = ptf.ptf_id
-                  and ptf_idx.client_id = ptf.client_id
-                  and ptf_idx.dt_fct    = ptf.dt_fct
-    inner join cli on ptf_idx.client_id = cli.client_id
-                  and ptf_idx.dt_fct    = cli.dt_fct
+        sum(fct_ast.mt_ast_ref)     as aum
+    from fct_ast
+    inner join ptf on fct_ast.cd_ptf = ptf.cd_ptf
+                  and fct_ast.dt_fct = ptf.dt_fct
+    inner join cli on fct_ast.cd_cli = cli.cd_cli
+                  and fct_ast.dt_fct = cli.dt_fct
     group by
-        ptf_idx.dt_fct,
-        ptf_idx.client_id,
-        ptf_idx.ptf_id,
-        ptf.ptf_name,
-        cli.client_name,
-        cli.client_category,
-        cli.client_category_name,
-        cli.country,
-        cli.country_name,
-        cli.currency,
-        ptf.manager_id,
-        ptf.manager_name,
-        ptf.risk_profile,
-        ptf.risk_profile_name,
+        fct_ast.dt_fct,
+        fct_ast.cd_cli,
+        fct_ast.cd_ptf,
+        ptf.lb_ptf,
+        cli.lb_cli,
+        cli.cd_cli_cat,
+        cli.lb_cli_cat,
+        cli.cd_cty_dom,
+        cli.lb_cty_dom,
+        cli.cd_ccy,
+        ptf.cd_mng,
+        ptf.lb_mng,
+        ptf.cd_prf,
+        ptf.lb_prf,
         current_date
 ),
 
 ytd_calculation as (
     select
         current_aum.dt_fct,
-        current_aum.client_id,
-        current_aum.ptf_id,
-        current_aum.ptf_name,
-        current_aum.client_name,
-        current_aum.client_category,
-        current_aum.client_category_name,
-        current_aum.country,
-        current_aum.country_name,
-        current_aum.client_currency,
-        current_aum.manager_id,
-        current_aum.manager_name,
-        current_aum.risk_profile,
-        current_aum.risk_profile_name,
+        current_aum.cd_cli,
+        current_aum.cd_ptf,
+        current_aum.lb_ptf,
+        current_aum.lb_cli,
+        current_aum.cd_cli_cat,
+        current_aum.lb_cli_cat,
+        current_aum.cd_cty_dom,
+        current_aum.lb_cty_dom,
+        current_aum.cd_ccy_cli,
+        current_aum.cd_mng,
+        current_aum.lb_mng,
+        current_aum.cd_prf,
+        current_aum.lb_prf,
         current_aum.aum             as aum_current,
         ytd_start.aum               as aum_ytd_start,
         case
@@ -87,8 +86,8 @@ ytd_calculation as (
         current_timestamp           as loaded_at
     from daily_aum current_aum
     left join daily_aum ytd_start
-        on  current_aum.client_id = ytd_start.client_id
-        and current_aum.ptf_id    = ytd_start.ptf_id
+        on  current_aum.cd_cli = ytd_start.cd_cli
+        and current_aum.cd_ptf = ytd_start.cd_ptf
         and ytd_start.dt_fct = (
             select min(dt_fct)
             from {{ ref('stg_set_cal') }}
@@ -98,19 +97,19 @@ ytd_calculation as (
 
 select
     dt_fct,
-    client_id,
-    ptf_id,
-    ptf_name,
-    client_name,
-    client_category,
-    client_category_name,
-    country,
-    country_name,
-    client_currency,
-    manager_id,
-    manager_name,
-    risk_profile,
-    risk_profile_name,
+    cd_cli,
+    cd_ptf,
+    lb_ptf,
+    lb_cli,
+    cd_cli_cat,
+    lb_cli_cat,
+    cd_cty_dom,
+    lb_cty_dom,
+    cd_ccy_cli,
+    cd_mng,
+    lb_mng,
+    cd_prf,
+    lb_prf,
     aum_current,
     aum_ytd_start,
     aum_ytd_variation_pct,
@@ -121,4 +120,4 @@ from ytd_calculation
 {% if var("aum_year") is not none %}
 where extract(year from dt_fct) = {{ var("aum_year") }}
 {% endif %}
-order by dt_fct desc, client_id, ptf_id
+order by dt_fct desc, cd_cli, cd_ptf

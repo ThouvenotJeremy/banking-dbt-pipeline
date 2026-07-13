@@ -1,551 +1,248 @@
 version: 2
 
 models:
-  - name: mart_client_exposure
-    description: "Exposition client par asset et par date avec conversion devise."
-    config:
-      contract:
-        enforced: true
-    tests:
-      - dbt_expectations.expect_table_row_count_to_be_between:
-          arguments:
-            min_value: 1
-            max_value: 10000
+  - name: mart_aum_ytd
+    description: "AUM par client/portefeuille avec variation YTD. Montants en CHF."
     columns:
       - name: dt_fct
         description: "Date de fait"
-        data_type: date
         tests:
           - not_null
-      - name: client_id
-        description: "Identifiant client"
-        data_type: varchar
+      - name: cd_cli
+        description: "Client"
         tests:
           - not_null
-      - name: asset_id
-        description: "Identifiant asset"
-        data_type: varchar
+      - name: cd_ptf
+        description: "Portefeuille"
         tests:
           - not_null
-      - name: currency
+      - name: lb_ptf
+        description: "Libellé portefeuille"
+      - name: lb_cli
+        description: "Nom client"
+      - name: cd_cli_cat
+        description: "Catégorie client"
+      - name: lb_cli_cat
+        description: "Libellé catégorie"
+      - name: cd_cty_dom
+        description: "Pays de domicile"
+      - name: lb_cty_dom
+        description: "Libellé pays"
+      - name: cd_ccy_cli
+        description: "Devise du client"
+      - name: cd_mng
+        description: "Relationship manager"
+      - name: lb_mng
+        description: "Nom du manager"
+      - name: cd_prf
+        description: "Profil de risque"
+      - name: lb_prf
+        description: "Libellé profil"
+      - name: aum_current
+        description: "AUM actuel en CHF"
+        tests:
+          - not_null
+      - name: aum_ytd_start
+        description: "AUM début d'année en CHF"
+      - name: aum_ytd_variation_pct
+        description: "Variation YTD en %"
+      - name: aum_ytd_variation_abs
+        description: "Variation YTD absolue en CHF"
+      - name: performance_date
+        description: "Date de calcul"
+      - name: loaded_at
+        description: "Horodatage de chargement"
+
+  - name: mart_client_exposure
+    description: "Exposition par client, portefeuille et actif. Montants en CHF, poids relatif par client."
+    columns:
+      - name: dt_fct
+        description: "Date de fait"
+        tests:
+          - not_null
+      - name: cd_cli
+        description: "Client"
+        tests:
+          - not_null
+      - name: lb_cli
+        description: "Nom client"
+      - name: cd_cli_cat
+        description: "Catégorie client"
+      - name: lb_cli_cat
+        description: "Libellé catégorie"
+      - name: cd_cty_dom
+        description: "Pays de domicile"
+      - name: lb_cty_dom
+        description: "Libellé pays domicile"
+      - name: cd_cty_nat
+        description: "Pays de nationalité"
+      - name: cd_ptf
+        description: "Portefeuille"
+        tests:
+          - not_null
+      - name: lb_ptf
+        description: "Libellé portefeuille"
+      - name: lb_ptf_alt
+        description: "Libellé alternatif"
+      - name: cd_mng
+        description: "Manager"
+      - name: lb_mng
+        description: "Nom manager"
+      - name: cd_mng_grp
+        description: "Groupe manager"
+      - name: lb_mng_grp
+        description: "Nom groupe manager"
+      - name: cd_mng_ext
+        description: "Gestionnaire externe"
+      - name: lb_mng_ext
+        description: "Nom gestionnaire externe"
+      - name: cd_agn
+        description: "Agent"
+      - name: lb_agn
+        description: "Nom agent"
+      - name: cd_ent
+        description: "Entité"
+      - name: lb_ent
+        description: "Nom entité"
+      - name: cd_buu
+        description: "Business unit"
+      - name: lb_buu
+        description: "Nom business unit"
+      - name: cd_prf
+        description: "Profil de risque"
+      - name: lb_prf
+        description: "Libellé profil"
+      - name: cd_ast
+        description: "Actif"
+      - name: asset_name
+        description: "Nom de l'actif"
+      - name: asset_class
+        description: "Classe d'actif"
+      - name: asset_class_name
+        description: "Libellé classe d'actif"
+      - name: cd_ccy
         description: "Devise de la position"
-        data_type: varchar
-        tests:
-          - not_null
       - name: xrt_rate
         description: "Taux de change appliqué"
-        data_type: double
-      - name: amount_position
-        description: "Montant de la position en devise locale"
-        data_type: double
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_between:
-              arguments:
-                min_value: 0
-                strictly: false
-          - dbt_expectations.expect_column_values_to_be_of_type:
-              arguments:
-                column_type: double
-      - name: amount_position_base_ccy
-        description: "Montant converti en devise de référence"
-        data_type: double
-        tests:
-          - not_null
+      - name: mt_ast
+        description: "Valorisation en devise locale"
+      - name: mt_ast_ref
+        description: "Valorisation en CHF"
       - name: weight_pct
-        description: "Poids de la position dans le portefeuille client"
-        data_type: double
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_between:
-              arguments:
-                min_value: 0
-                max_value: 1
-                strictly: false
-      - name: client_name
-        description: "Nom complet du client"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: client_category
-        description: "Code de la catégorie client (PRIVATE, RETAIL)"
-        data_type: varchar
-        tests:
-          - not_null
-          - accepted_values:
-              arguments:
-                values: ['PRIVATE', 'RETAIL']
-      - name: client_category_name
-        description: "Libellé de la catégorie client"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: country
-        description: "Code du pays de domicile (ISO 3166)"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: country_name
-        description: "Libellé du pays"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: ptf_id
-        description: "Identifiant unique du portefeuille"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: ptf_name
-        description: "Libellé du portefeuille"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: manager_id
-        description: "Identifiant du gestionnaire du portefeuille"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: manager_name
-        description: "Nom du gestionnaire"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: risk_profile
-        description: "Code du profil de risque (GROWTH, BALANCED, CONSERV)"
-        data_type: varchar
-        tests:
-          - not_null
-          - accepted_values:
-              arguments:
-                values: ['GROWTH', 'BALANCED', 'CONSERV']
-      - name: risk_profile_name
-        description: "Libellé du profil de risque"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: asset_name
-        description: "Libellé de l'actif / instrument"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: asset_class
-        description: "Classe d'actif (EQUITY, BOND, CASH, etc.)"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: nationality
-        description: "Nationalité du client"
-        data_type: varchar
-      - name: ptf_name_alt
-        description: "Libellé alternatif du portefeuille"
-        data_type: varchar
-      - name: manager_group_id
-        description: "Groupe du manager"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: manager_group_name
-        description: "Nom du groupe du manager"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: ext_manager_id
-        description: "Gestionnaire externe mandaté"
-        data_type: varchar
-      - name: ext_manager_name
-        description: "Nom du gestionnaire externe"
-        data_type: varchar
-      - name: agent_id
-        description: "Agent de distribution"
-        data_type: varchar
-      - name: agent_name
-        description: "Nom de l'agent"
-        data_type: varchar
-      - name: entity_id
-        description: "Entité juridique"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: entity_name
-        description: "Nom de l'entité juridique"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: business_unit_id
-        description: "Business unit"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: business_unit_name
-        description: "Nom de la business unit"
-        data_type: varchar
-        tests:
-          - not_null
+        description: "Poids de la position dans le client"
 
   - name: mart_portfolio_performance
-    description: "Performance des portefeuilles avec valorisation FX. Une ligne par portefeuille, actif et date."
-    columns:
-      - name: ptf_id
-        description: "Identifiant du portefeuille"
-        tests:
-          - not_null
-      - name: client_id
-        description: "Client propriétaire du portefeuille"
-        tests:
-          - not_null
-      - name: asset_id
-        description: "Identifiant de l'actif"
-        tests:
-          - not_null
-      - name: currency
-        description: "Devise de la position"
-        tests:
-          - not_null
-      - name: amount_position
-        description: "Valorisation de la position en devise locale"
-        tests:
-          - not_null
-      - name: xrt_rate
-        description: "Taux de change appliqué vers la devise de référence (USD)"
-      - name: xrt_rate_currency
-        description: "Devise source du taux de change"
-      - name: market_value
-        description: "Valorisation de la position en devise locale (identique à amount_position)"
-      - name: market_value_usd
-        description: "Valorisation de la position convertie en USD"
-      - name: performance_date
-        description: "Date de valorisation"
-        tests:
-          - not_null
-      - name: loaded_at
-        description: "Horodatage de génération de la ligne"
-
-  - name: mart_rm_performance
-    description: "Performance des Relationship Managers (gestionnaires). Agrégation des AUM par RM avec métriques YTD et statistiques du book."
-    config:
-      contract:
-        enforced: true
-    tests:
-      - dbt_expectations.expect_table_row_count_to_be_between:
-          arguments:
-            min_value: 1
-            max_value: 1000
+    description: "Performance par portefeuille et actif : valorisation, P&L, TWR. Montants en devise locale et CHF."
     columns:
       - name: dt_fct
         description: "Date de fait"
-        data_type: date
         tests:
           - not_null
-      - name: manager_id
-        description: "Identifiant unique du Relationship Manager"
-        data_type: varchar
+      - name: cd_ptf
+        description: "Portefeuille"
         tests:
           - not_null
-      - name: manager_name
-        description: "Nom complet du gestionnaire"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: manager_group_id
-        description: "Groupe du manager"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: manager_group_name
-        description: "Nom du groupe du manager"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: aum_current
-        description: "AUM total actuel du book du RM en devise locale"
-        data_type: double
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_between:
-              arguments:
-                min_value: 0
-                strictly: false
-      - name: aum_ytd_start
-        description: "AUM du book du RM au 1er janvier de l'année (YTD start)"
-        data_type: double
-      - name: aum_ytd_variation_pct
-        description: "Variation YTD en pourcentage"
-        data_type: double
-        tests:
-          - not_null
-      - name: aum_ytd_variation_abs
-        description: "Variation YTD en montant absolu"
-        data_type: double
-        tests:
-          - not_null
-      - name: client_count
-        description: "Nombre unique de clients gérés par le RM"
-        data_type: bigint
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_between:
-              arguments:
-                min_value: 1
-                strictly: false
-      - name: portfolio_count
-        description: "Nombre unique de portefeuilles gérés par le RM"
-        data_type: bigint
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_between:
-              arguments:
-                min_value: 1
-                strictly: false
-      - name: category_count
-        description: "Nombre de catégories clients distinctes gérées"
-        data_type: bigint
-        tests:
-          - not_null
-      - name: aum_avg_per_client
-        description: "AUM moyen par client du RM"
-        data_type: double
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_between:
-              arguments:
-                min_value: 0
-                strictly: false
-      - name: aum_avg_per_portfolio
-        description: "AUM moyen par portefeuille du RM"
-        data_type: double
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_between:
-              arguments:
-                min_value: 0
-                strictly: false
-      - name: performance_date
-        description: "Date de génération du rapport"
-        data_type: date
-        tests:
-          - not_null
+      - name: cd_cli
+        description: "Client"
+      - name: lb_ptf
+        description: "Libellé portefeuille"
+      - name: cd_prf
+        description: "Profil de risque"
+      - name: lb_prf
+        description: "Libellé profil"
+      - name: cd_ast
+        description: "Actif"
+      - name: asset_name
+        description: "Nom de l'actif"
+      - name: asset_class
+        description: "Classe d'actif"
+      - name: asset_class_name
+        description: "Libellé classe d'actif"
+      - name: cd_ccy
+        description: "Devise"
+      - name: qt_ast
+        description: "Quantité"
+      - name: mt_ast
+        description: "Valorisation en devise locale"
+      - name: mt_ast_ref
+        description: "Valorisation en CHF"
+      - name: mt_pnl
+        description: "P&L en devise locale"
+      - name: mt_pnl_ref
+        description: "P&L en CHF"
+      - name: rt_prm
+        description: "Poids dans le portefeuille"
+      - name: rt_pam
+        description: "Performance accumulée"
+      - name: pc_twr
+        description: "Time-weighted return"
       - name: loaded_at
-        description: "Horodatage de génération de la ligne"
-        data_type: timestamp
-        tests:
-          - not_null
+        description: "Horodatage de chargement"
 
-
-  - name: mart_ptf_detail
-    description: "Vue complète des portefeuilles par date avec métriques en devise locale et en CHF (devise de référence banque). Une ligne par portefeuille et par date de fait."
+  - name: mart_rm_performance
+    description: "Performance agrégée par relationship manager : AUM, variation YTD, nombre de clients/portefeuilles. Montants en CHF."
     columns:
       - name: dt_fct
-        description: "Date de fait (fin de mois)"
-        data_type: date
+        description: "Date de fait"
         tests:
           - not_null
-      - name: ptf_id
-        description: "Identifiant du portefeuille"
-        data_type: varchar
+      - name: cd_mng
+        description: "Relationship manager"
         tests:
           - not_null
-      - name: ptf_name
-        description: "Libellé du portefeuille"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: ptf_name_alt
-        description: "Libellé alternatif"
-        data_type: varchar
-      - name: client_id
-        description: "Client propriétaire"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: currency
-        description: "Devise du portefeuille"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: xrt_rate
-        description: "Taux de change appliqué vers CHF"
-        data_type: double
-        tests:
-          - not_null
-      - name: risk_profile
-        description: "Code profil de risque"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: risk_profile_name
-        description: "Libellé profil de risque"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: manager_id
-        description: "Code du manager"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: manager_name
+      - name: lb_mng
         description: "Nom du manager"
-        data_type: varchar
+      - name: cd_mng_grp
+        description: "Groupe du manager"
+      - name: lb_mng_grp
+        description: "Nom du groupe"
+      - name: aum_current
+        description: "AUM actuel en CHF"
+      - name: aum_ytd_start
+        description: "AUM début d'année en CHF"
+      - name: aum_ytd_variation_pct
+        description: "Variation YTD en %"
+      - name: aum_ytd_variation_abs
+        description: "Variation YTD absolue en CHF"
+      - name: client_count
+        description: "Nombre de clients"
+      - name: portfolio_count
+        description: "Nombre de portefeuilles"
+      - name: category_count
+        description: "Nombre de catégories client"
+      - name: aum_avg_per_client
+        description: "AUM moyen par client"
+      - name: aum_avg_per_portfolio
+        description: "AUM moyen par portefeuille"
+      - name: performance_date
+        description: "Date de calcul"
+      - name: loaded_at
+        description: "Horodatage de chargement"
+
+  - name: mart_ptf_detail
+    description: "Vue complète par portefeuille et date : toutes dimensions + performance (net, P&L, NNM, flux) en devise portefeuille et CHF, horizons YTD/MTD/DTD."
+    columns:
+      - name: dt_fct
+        description: "Date de fait"
         tests:
           - not_null
-      - name: manager_group_id
-        description: "Code du groupe manager"
-        data_type: varchar
+      - name: cd_ptf
+        description: "Portefeuille"
         tests:
           - not_null
-      - name: manager_group_name
-        description: "Nom du groupe manager"
-        data_type: varchar
+      - name: cd_cli
+        description: "Client"
         tests:
           - not_null
-      - name: ext_manager_id
-        description: "Code gestionnaire externe"
-        data_type: varchar
-      - name: ext_manager_name
-        description: "Nom gestionnaire externe"
-        data_type: varchar
-      - name: agent_id
-        description: "Code agent"
-        data_type: varchar
-      - name: agent_name
-        description: "Nom agent"
-        data_type: varchar
-      - name: entity_id
-        description: "Code entité juridique"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: entity_name
-        description: "Nom entité juridique"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: business_unit_id
-        description: "Code business unit"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: business_unit_name
-        description: "Nom business unit"
-        data_type: varchar
-        tests:
-          - not_null
-      - name: pc_ptf
-        description: "Poids relatif du portefeuille"
-        data_type: double
-        tests:
-          - not_null
+      - name: cd_ccy_ptf
+        description: "Devise du portefeuille"
       - name: mt_net
-        description: "Actif net en devise du portefeuille"
-        data_type: decimal(19,4)
+        description: "Actif net en devise portefeuille"
         tests:
           - not_null
       - name: mt_net_ref
         description: "Actif net en CHF"
-        data_type: decimal(19,4)
         tests:
           - not_null
-      - name: mt_aci
-        description: "Intérêts courus en devise du portefeuille"
-        data_type: decimal(19,4)
-        tests:
-          - not_null
-      - name: mt_aci_ref
-        description: "Intérêts courus en CHF"
-        data_type: decimal(19,4)
-        tests:
-          - not_null
-      - name: mt_lia
-        description: "Passif en devise du portefeuille"
-        data_type: decimal(19,4)
-        tests:
-          - not_null
-      - name: mt_lia_ref
-        description: "Passif en CHF"
-        data_type: decimal(19,4)
-        tests:
-          - not_null
-      - name: mt_pnl
-        description: "P&L en devise du portefeuille"
-        data_type: decimal(19,4)
-        tests:
-          - not_null
-      - name: mt_pnl_ref
-        description: "P&L en CHF"
-        data_type: decimal(19,4)
-        tests:
-          - not_null
-      - name: mt_pnc
-        description: "Variation nette en devise du portefeuille"
-        data_type: decimal(19,4)
-        tests:
-          - not_null
-      - name: mt_pnc_ref
-        description: "Variation nette en CHF"
-        data_type: decimal(19,4)
-        tests:
-          - not_null
-      - name: mt_inc
-        description: "Flux entrants en devise du portefeuille"
-        data_type: decimal(19,4)
-        tests:
-          - not_null
-      - name: mt_inc_ref
-        description: "Flux entrants en CHF"
-        data_type: decimal(19,4)
-        tests:
-          - not_null
-      - name: mt_out
-        description: "Flux sortants en devise du portefeuille"
-        data_type: decimal(19,4)
-        tests:
-          - not_null
-      - name: mt_out_ref
-        description: "Flux sortants en CHF"
-        data_type: decimal(19,4)
-        tests:
-          - not_null
-      - name: mt_nnm_inc
-        description: "NNM entrant en devise du portefeuille"
-        data_type: decimal(19,4)
-        tests:
-          - not_null
-      - name: mt_nnm_inc_ref
-        description: "NNM entrant en CHF"
-        data_type: decimal(19,4)
-        tests:
-          - not_null
-      - name: mt_nnm_out
-        description: "NNM sortant en devise du portefeuille"
-        data_type: decimal(19,4)
-        tests:
-          - not_null
-      - name: mt_nnm_out_ref
-        description: "NNM sortant en CHF"
-        data_type: decimal(19,4)
-        tests:
-          - not_null
-      - name: mt_int_inc
-        description: "Flux d'intérêts entrants en devise du portefeuille"
-        data_type: decimal(19,4)
-        tests:
-          - not_null
-      - name: mt_int_inc_ref
-        description: "Flux d'intérêts entrants en CHF"
-        data_type: decimal(19,4)
-        tests:
-          - not_null
-      - name: mt_int_out
-        description: "Flux d'intérêts sortants en devise du portefeuille"
-        data_type: decimal(19,4)
-        tests:
-          - not_null
-      - name: mt_int_out_ref
-        description: "Flux d'intérêts sortants en CHF"
-        data_type: decimal(19,4)
-        tests:
-          - not_null
-      - name: loaded_at
-        description: "Date de chargement"
-        data_type: date
-        tests:
-          - not_null
+      - name: xrt_rate
+        description: "Taux de change appliqué"

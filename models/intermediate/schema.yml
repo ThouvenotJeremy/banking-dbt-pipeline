@@ -276,87 +276,6 @@ models:
         tests:
           - not_null
 
-  - name: int_ptf_idx
-    description: "Index des positions par portefeuille et par date. Une ligne par portefeuille, actif et date de fait."
-    columns:
-      - name: dt_fct
-        description: "Date de fait"
-        tests:
-          - not_null
-      - name: ptf_id
-        description: "Identifiant du portefeuille"
-        tests:
-          - not_null
-      - name: client_id
-        description: "Client propriétaire du portefeuille"
-        tests:
-          - not_null
-      - name: currency
-        description: "Devise de référence du portefeuille"
-        tests:
-          - not_null
-      - name: risk_profile
-        description: "Profil de risque du portefeuille"
-        tests:
-          - not_null
-          - accepted_values:
-              arguments:
-                values: ['GROWTH', 'BALANCED', 'CONSERV']
-      - name: asset_id
-        description: "Identifiant de l'actif"
-        tests:
-          - not_null
-      - name: quantity
-        description: "Quantité de l'actif détenu"
-        tests:
-          - not_null
-      - name: amount_position
-        description: "Valorisation en devise locale"
-        tests:
-          - not_null
-      - name: amount_position_ref
-        description: "Valorisation en devise de référence — utiliser pour les agrégations AUM"
-        tests:
-          - not_null
-      - name: pnl_ref
-        description: "P&L de la période en devise de référence"
-        tests:
-          - not_null
-      - name: weight_ptf
-        description: "Poids de la position dans le portefeuille"
-        tests:
-          - not_null
-      - name: pos_currency
-        description: "Devise de la position"
-        tests:
-          - not_null
-
-          
-      - name: int_fct_xrt
-        description: "Taux de change journaliers en couche intermédiaire. Une ligne par devise et par date."
-        columns:
-          - name: fct_xrt_id
-            description: "Identifiant technique du taux"
-            tests:
-              - not_null
-              - unique
-          - name: currency
-            description: "Code devise source"
-            tests:
-              - not_null
-          - name: dt_fct
-            description: "Date du taux"
-            tests:
-              - not_null
-          - name: rate_factor
-            description: "Facteur de conversion"
-            tests:
-              - not_null
-          - name: rate_value
-            description: "Valeur du taux vers CHF (devise de référence banque)"
-            tests:
-              - not_null
-
 
   - name: int_fct_ope
     description: "Opérations enrichies : client + montants convertis en devise portefeuille (_PTF via pivot CHF) et en CHF (_REF), aux taux de la date comptable. Modèle incrémental."
@@ -780,5 +699,31 @@ models:
           - not_null
       - name: mt_int_out_ref_dtd
         description: "Flux intérêts sortants DTD en CHF"
+        tests:
+          - not_null
+
+
+  - name: int_ins
+    description: "Instruments financiers enrichis avec le libellé de leur groupe. Une ligne par instrument."
+    columns:
+      - name: id_stg_ins
+        description: "Identifiant technique (issu de stg)"
+        tests:
+          - not_null
+      - name: cd_ins
+        description: "Code unique de l'instrument"
+        tests:
+          - not_null
+          - unique
+      - name: lb_ins
+        description: "Libellé de l'instrument"
+        tests:
+          - not_null
+      - name: cd_ins_grp
+        description: "Code du groupe d'instruments"
+        tests:
+          - not_null
+      - name: lb_ins_grp
+        description: "Libellé du groupe d'instruments"
         tests:
           - not_null

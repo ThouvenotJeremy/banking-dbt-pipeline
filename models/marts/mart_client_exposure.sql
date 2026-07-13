@@ -1,15 +1,15 @@
 {{
     config(
         materialized='table',
-        cluster_by=['DT_FCT', 'CLIENT_ID'],
+        cluster_by=['DT_FCT', 'CD_CLI'],
         post_hook=[
             "{% if target.type == 'snowflake' %}grant select on {{ this }} to role BI_READ_ONLY{% endif %}"
         ]
     )
 }}
 
-with ptf_idx as (
-    select * from {{ ref('int_ptf_idx') }}
+with fct_ast as (
+    select * from {{ ref('int_fct_ast') }}
 ),
 
 cli as (
@@ -21,67 +21,57 @@ ptf as (
 ),
 
 ins as (
-    select * from {{ ref('stg_ins') }}
-),
-
-xrt as (
-    select * from {{ ref('st0_fct_xrt') }}
+    select * from {{ ref('int_ins') }}
 )
 
 select
-    ptf_idx.dt_fct,
-    ptf_idx.client_id,
-    cli.client_name,
-    cli.client_category,
-    cli.client_category_name,
-    cli.country,
-    cli.country_name,
-    cli.nationality,
-    ptf_idx.ptf_id,
-    ptf.ptf_name,
-    ptf.ptf_name_alt,
-    ptf.manager_id,
-    ptf.manager_name,
-    ptf.manager_group_id,
-    ptf.manager_group_name,
-    ptf.ext_manager_id,
-    ptf.ext_manager_name,
-    ptf.agent_id,
-    ptf.agent_name,
-    ptf.entity_id,
-    ptf.entity_name,
-    ptf.business_unit_id,
-    ptf.business_unit_name,
-    ptf_idx.risk_profile,
-    ptf.risk_profile_name,
-    ptf_idx.asset_id,
-    ins.ins_name                                        as asset_name,
-    ins.ins_grp_id                                      as asset_class,
-    ptf_idx.currency,
-    xrt.rt_val                                          as xrt_rate,
-    cast(ptf_idx.amount_position as double)             as amount_position,
-    cast(ptf_idx.amount_position * coalesce(xrt.rt_val, 1) as double) as amount_position_base_ccy,
+    fct_ast.dt_fct,
+    fct_ast.cd_cli,
+    cli.lb_cli,
+    cli.cd_cli_cat,
+    cli.lb_cli_cat,
+    cli.cd_cty_dom,
+    cli.lb_cty_dom,
+    cli.cd_cty_nat,
+    fct_ast.cd_ptf,
+    ptf.lb_ptf,
+    ptf.lb_ptf_alt,
+    ptf.cd_mng,
+    ptf.lb_mng,
+    ptf.cd_mng_grp,
+    ptf.lb_mng_grp,
+    ptf.cd_mng_ext,
+    ptf.lb_mng_ext,
+    ptf.cd_agn,
+    ptf.lb_agn,
+    ptf.cd_ent,
+    ptf.lb_ent,
+    ptf.cd_buu,
+    ptf.lb_buu,
+    ptf.cd_prf,
+    ptf.lb_prf,
+    fct_ast.cd_ast,
+    ins.lb_ins                                          as asset_name,
+    ins.cd_ins_grp                                      as asset_class,
+    ins.lb_ins_grp                                      as asset_class_name,
+    fct_ast.cd_ccy,
+    fct_ast.xrt_rate_pos                                as xrt_rate,
+
+    fct_ast.mt_ast,
+    fct_ast.mt_ast_ref,
     cast(
         {{ safe_divide(
-            'ptf_idx.amount_position',
-            'sum(ptf_idx.amount_position) over (partition by ptf_idx.client_id, ptf_idx.dt_fct)'
+            'fct_ast.mt_ast_ref',
+            'sum(fct_ast.mt_ast_ref) over (partition by fct_ast.cd_cli, fct_ast.dt_fct)'
         ) }}
     as double)                                          as weight_pct
 
-from ptf_idx
+from fct_ast
 left join cli
-    on ptf_idx.client_id = cli.client_id
-    and ptf_idx.dt_fct   = cli.dt_fct
+    on fct_ast.cd_cli = cli.cd_cli
+    and fct_ast.dt_fct = cli.dt_fct
 left join ptf
-    on ptf_idx.ptf_id  = ptf.ptf_id
-    and ptf_idx.dt_fct = ptf.dt_fct
+    on fct_ast.cd_ptf = ptf.cd_ptf
+    and fct_ast.dt_fct = ptf.dt_fct
 left join ins
-    on ptf_idx.asset_id = ins.ins_id
-left join xrt
-    on ptf_idx.currency = xrt.cd_ccy
-    and xrt.dt_fct = (
-        select max(x2.dt_fct)
-        from {{ ref('st0_fct_xrt') }} x2
-        where x2.cd_ccy    = ptf_idx.currency
-          and x2.dt_fct   <= ptf_idx.dt_fct
-    )
+    on fct_ast.cd_ins = ins.cd_ins
