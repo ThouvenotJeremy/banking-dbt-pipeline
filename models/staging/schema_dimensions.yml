@@ -276,3 +276,52 @@ models:
               arguments:
                 values: ['EQU', 'BND', 'CSH', 'ETF']
 
+  - name: stg_pos_typ
+    description: "Types de position avec métadonnées techniques STG. Une ligne par type. Modèle incrémental."
+    config:
+      materialized: incremental
+    columns:
+      - name: id_stg_pos_typ
+        description: "Identifiant technique unique séquentiel"
+        tests:
+          - not_null
+          - unique
+      - name: ts_stg
+        description: "Timestamp de chargement"
+        tests:
+          - not_null
+      - name: vr_stg
+        description: "Version YYYYMMDD"
+        tests:
+          - not_null
+      - name: id_obj_tec
+        description: "Identifiant objet technique (1023 = type de position)"
+        tests:
+          - not_null
+      - name: cd_src
+        description: "Source des données"
+        tests:
+          - not_null
+      - name: cd_pid
+        description: "Identifiant d'exécution dbt"
+        tests:
+          - not_null
+      - name: lb_dsc
+        description: "Description libre"
+      - name: cd_pos_typ_src
+        description: "Code type de position dans le système source"
+        tests:
+          - not_null
+      - name: cd_pos_typ
+        description: "Code unique du type de position (T/C)"
+        tests:
+          - not_null
+          - unique
+          - accepted_values:
+              arguments:
+                values: ['T', 'C']
+      - name: lb_pos_typ
+        description: "Libellé du type de position"
+        tests:
+          - not_null
+

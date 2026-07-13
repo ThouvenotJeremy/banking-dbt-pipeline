@@ -73,6 +73,14 @@ sources:
           - name: yn_loa
             description: "Indicateur prêt (Y/N)"
 
+      - name: st0_pos_typ
+        description: "Types de position bruts. Une ligne par type (T=titres, C=cash)."
+        columns:
+          - name: cd_pos_typ
+            description: "Code unique du type de position (T/C)"
+          - name: lb_pos_typ
+            description: "Libellé du type de position"
+
       - name: st0_fct_ope
         description: "Opérations financières brutes. Une ligne par opération. Fact immuable."
         columns:
