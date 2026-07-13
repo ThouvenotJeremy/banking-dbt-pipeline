@@ -3,27 +3,54 @@
 ![DBT CI](https://github.com/ThouvenotJeremy/banking-dbt-pipeline/actions/workflows/dbt_ci.yml/badge.svg)
 
 Pipeline analytique de bout en bout pour institution financière de banque privée,
-construit avec **dbt**, orchestré avec **Airflow**, et validé par **CI/CD**.
+construit avec **dbt** (DuckDB en dev, **Snowflake** en cible production), orchestré
+avec **Airflow**, et validé par **CI/CD** à chaque push. Le développement s'appuie
+sur un workflow assisté par agent IA (Claude Code) cadré par des règles versionnées,
+et le pipeline embarque de l'observability de données sur la conversion multi-devises.
 
-Ce projet reproduit l'architecture d'un Data Warehouse bancaire (inspiré des
-systèmes core comme Avaloq) : ingestion de référentiels et de faits financiers,
-historisation des dimensions, conversion multi-devises, et exposition de data marts
-prêts pour le reporting BI (AUM, performance, exposition client, NNM).
+## Développement assisté par agent (Claude Code)
 
-## Points clés
+Ce projet documente et versionne son usage d'un agent IA comme outil de
+développement, au même titre que le reste de l'outillage :
 
-- **Architecture en 4 couches** avec dépendance stricte descendante
-  (`st0 → staging → intermediate → marts`)
-- **Gestion multi-devises** : chaque montant est exposé en devise locale,
-  en devise du portefeuille et en devise de référence banque (CHF),
-  via jointures sur les taux de change datés (pivot CHF)
-- **Historisation SCD2** des dimensions clients et portefeuilles (snapshots dbt)
-- **Modèles incrémentaux** avec clés techniques séquentielles stables entre les runs
-- **387 tests** de qualité de données (unicité, non-nullité, valeurs acceptées,
-  intégrité référentielle)
-- **CI/CD** GitHub Actions : build + test automatiques à chaque push
-- **Orchestration** Airflow (Astronomer) avec ordonnancement respectant
-  les dépendances inter-couches
+- **[`CLAUDE.md`](CLAUDE.md)** — fichier de règles versionné, lu automatiquement
+  par l'agent à chaque session : règle de dépendance stricte entre couches,
+  nomenclature des préfixes/suffixes de colonnes, pattern exact des métadonnées
+  techniques en staging (ID incrémental stable, timestamp, source, PID d'exécution).
+  L'objectif : rendre les conventions du projet explicites et opposables plutôt
+  qu'implicites, pour que le code généré reste reproductible d'une session et
+  d'un contributeur à l'autre.
+- **`/new-stg`** — slash command qui industrialise la création d'un modèle
+  staging conforme au pattern du projet à partir d'une table source `st0_*`
+  (dimension ou fait, métadonnées techniques, tests, mise à jour de
+  `sources.yml`/`schema.yml`), pour éviter les erreurs de copier-coller sur
+  un squelette répété ~20 fois dans le projet. Exemple : `/new-stg st0_pos_typ`.
+
+Détail complet du workflow et de l'outillage : [`.claude/README.md`](.claude/README.md).
+
+## Qualité & observability des données
+
+**434 tests** dbt s'exécutent à chaque run CI, dont :
+
+- **35 tests de cohérence de conversion multi-devises**, via 2 macros de test
+  génériques réutilisables (`tests/generic/`) plutôt que du SQL dupliqué par
+  colonne :
+  - `currency_conversion_consistency` — vérifie que chaque montant `_ref`
+    vaut bien `montant_natif × taux` (conversion directe vers CHF), à une
+    tolérance d'arrondi de 0.01 près ;
+  - `currency_pivot_conversion_consistency` — même garantie pour les montants
+    `_ptf`, dont la formule diffère (pivot CHF à deux taux :
+    `montant_natif × taux_source ÷ taux_portefeuille`).
+
+  Appliqués sur les 4 modèles de faits de la couche intermediate
+  (`int_fct_ptf`, `int_fct_ast`, `int_fct_ope`, `int_fct_mvt`), ces tests
+  transforment une hypothèse de conversion en garantie vérifiée à chaque run —
+  toute dérive silencieuse (jointure de taux erronée, taux périmé, régression
+  de formule) fait échouer `dbt test` avant d'atteindre un mart ou un
+  reporting client.
+- **399 tests structurels** : unicité et non-nullité des clés techniques et
+  codes métier, valeurs acceptées sur les colonnes à domaine fermé
+  (ex: devises, catégories client), intégrité référentielle entre modèles.
 
 ## Architecture
 
@@ -84,7 +111,7 @@ graph TD
 ### Dimensions
 Clients, portefeuilles, actifs, instruments, devises, pays, catégories client,
 profils de risque, relationship managers (et leurs groupes), gestionnaires externes,
-agents, entités juridiques, business units, types d'opérations.
+agents, entités juridiques, business units, types d'opérations, types de position.
 
 ### Faits
 - **fct_ast** — positions d'actifs valorisées par date
@@ -103,7 +130,8 @@ Chaque montant financier est donc exposé sur plusieurs axes :
 - **_ptf** — converti dans la devise du portefeuille (via pivot CHF)
 - **_ref** — converti en CHF, devise de référence de la banque
 
-Les conversions utilisent le taux de change **à la date du fait**, jamais un taux fixe.
+Les conversions utilisent le taux de change **à la date du fait**, jamais un taux
+fixe — et leur cohérence est vérifiée par les tests décrits ci-dessus.
 
 ## Stack technique
 
@@ -159,7 +187,6 @@ les instructions de lancement en local.
 seed → run staging → snapshot → run intermediate → run marts → test
 ```
 
----
 Planification : jours ouvrés à 23h, après clôture des marchés.
 
 ## CI/CD
@@ -171,6 +198,9 @@ Voir [`.github/workflows/dbt_ci.yml`](.github/workflows/dbt_ci.yml).
 ## Structure du projet
 ```
 banking-dbt-pipeline/
+├── .claude/                  # Configuration et workflow Claude Code
+│   ├── commands/              # Slash commands (ex: /new-stg)
+│   └── README.md               # Détail du workflow assisté par agent
 ├── models/
 │   ├── staging/
 │   │   ├── dimensions/       # stg des référentiels
@@ -179,7 +209,9 @@ banking-dbt-pipeline/
 │   └── marts/                # data marts BI
 ├── seeds/                    # données sources (ST0)
 ├── snapshots/                # SCD2 clients et portefeuilles
-├── tests/                    # tests singuliers
+├── tests/
+│   ├── generic/               # macros de test réutilisables (ex: cohérence FX)
+│   └── *.sql                  # tests singuliers
 ├── macros/                   # macros réutilisables
 ├── orchestration/airflow/    # DAG Airflow (Astronomer)
 └── .github/workflows/        # CI/CD
@@ -191,7 +223,7 @@ banking-dbt-pipeline/
 
 **Jérémy Thouvenot** — Consultant Data & BI
 
-5 ans d'expérience en banque privée suisse (Lombard Odier, CA Indosuez,Capital Union Bank, Hinduja Bank). Spécialisé dans les pipelines de données Avaloq/Azqore, Talend, Qlik Sense et Power BI, pour les institutions financières de la région genevoise.
+5 ans d'expérience en banque privée suisse (Lombard Odier, CA Indosuez, Capital Union Bank, Hinduja Bank). Spécialisé dans les pipelines de données Avaloq/Azqore, Talend, Qlik Sense et Power BI, pour les institutions financières de la région genevoise.
 
 [Profil Malt](https://www.malt.fr/profile/jeremythouvenot) ·
 [LinkedIn](https://www.linkedin.com/in/jeremy-thouvenot/)
