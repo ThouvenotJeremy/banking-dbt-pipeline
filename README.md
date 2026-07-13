@@ -2,221 +2,185 @@
 
 ![DBT CI](https://github.com/ThouvenotJeremy/banking-dbt-pipeline/actions/workflows/dbt_ci.yml/badge.svg)
 
-A production-ready data pipeline framework inspired by **Avaloq/Azqore core banking architecture**, built with DBT and Snowflake. Designed to be adapter to any core banking system (Avaloq, Temenos, Murex, etc).
+Pipeline analytique de bout en bout pour institution financière de banque privée,
+construit avec **dbt**, orchestré avec **Airflow**, et validé par **CI/CD**.
 
----
+Ce projet reproduit l'architecture d'un Data Warehouse bancaire (inspiré des
+systèmes core comme Avaloq) : ingestion de référentiels et de faits financiers,
+historisation des dimensions, conversion multi-devises, et exposition de data marts
+prêts pour le reporting BI (AUM, performance, exposition client, NNM).
 
-## Overview
+## Points clés
 
-This project replicates the data architecture used in Swiss private banking institutions, covering the full pipeline from raw core banking extracts to business-ready reporting tables.
-
-**Key capabilities:**
-- Full historization of client and portfolio dimensions (SCD Type 2)
-- Banking calendar with end-of-month positions
-- Forward fill of positions across time periods
-- Multi-currency exposure calculation
-- Production-ready on **Snowflake** with local development on **DuckDB**
-
----
+- **Architecture en 4 couches** avec dépendance stricte descendante
+  (`st0 → staging → intermediate → marts`)
+- **Gestion multi-devises** : chaque montant est exposé en devise locale,
+  en devise du portefeuille et en devise de référence banque (CHF),
+  via jointures sur les taux de change datés (pivot CHF)
+- **Historisation SCD2** des dimensions clients et portefeuilles (snapshots dbt)
+- **Modèles incrémentaux** avec clés techniques séquentielles stables entre les runs
+- **387 tests** de qualité de données (unicité, non-nullité, valeurs acceptées,
+  intégrité référentielle)
+- **CI/CD** GitHub Actions : build + test automatiques à chaque push
+- **Orchestration** Airflow (Astronomer) avec ordonnancement respectant
+  les dépendances inter-couches
 
 ## Architecture
 
+```mermaid
+graph TD
+    subgraph ST0["ST0 — Sources (seeds)"]
+        S0D[Dimensionscli, ptf, ast, ccy, cty...]
+        S0F[Faitsfct_ast, fct_ope, fct_mvt, fct_ptf, fct_xrt]
+    end
+
+    subgraph STG["Staging — Extraction + métadonnées techniques"]
+        SGD[stg dimensionsincrémental, ID technique]
+        SGF[stg faitsincrémental, immuable]
+    end
+
+    subgraph SNAP["Snapshots — SCD2"]
+        SNC[clients_snapshot]
+        SNP[portfolio_snapshot]
+    end
+
+    subgraph INT["Intermediate — Logique métier"]
+        ID[int_cli, int_ptf, int_inshistorisés + enrichis]
+        IF[int_fct_ast, int_fct_ope,int_fct_mvt, int_fct_ptfconversion multi-devises]
+    end
+
+    subgraph MART["Marts — BI ready"]
+        M1[mart_aum_ytd]
+        M2[mart_client_exposure]
+        M3[mart_portfolio_performance]
+        M4[mart_rm_performance]
+        M5[mart_ptf_detail]
+    end
+
+    S0D --> SGD
+    S0F --> SGF
+    SGD --> SNC
+    SGD --> SNP
+    SGD --> ID
+    SNC --> ID
+    SNP --> ID
+    SGF --> IF
+    SGD --> IF
+    ID --> M1 & M2 & M3 & M4 & M5
+    IF --> M1 & M2 & M3 & M4 & M5
 ```
-ST0 (Raw Avaloq extracts)
-    ↓
-Staging (Cleaning, renaming, casting)
-    ↓
-Intermediate (Business logic, historization, calendar join)
-    ↓
-Marts (Business-ready reporting tables)
-```
 
-### Layer Details
+### Les 4 couches
 
-| Layer | Models | Description |
-|---|---|---|
-| **Seeds** | `st0_*` | Raw core banking data (clients, portfolios, positions, FX rates) |
-| **Staging** | `stg_*` | Cleaned and typed models, calendar generation |
-| **Snapshots** | `clients_snapshot`, `portfolio_snapshot` | SCD Type 2 historization via DBT snapshots |
-| **Intermediate** | `int_*` | Calendar × dimensions cross join, position enrichment |
-| **Marts** | `mart_*` | Client exposure, portfolio performance |
+| Couche | Rôle | Matérialisation |
+|--------|------|-----------------|
+| **ST0** | Sources brutes (seeds CSV simulant l'extraction du core banking) | seed |
+| **Staging** | Nettoyage, typage, ajout des métadonnées techniques (ID séquentiel, timestamp, source, PID d'exécution) | incrémental |
+| **Intermediate** | Historisation SCD2, jointures dimensionnelles, conversion multi-devises | incrémental / vue |
+| **Marts** | Agrégations métier prêtes pour la BI | table |
 
----
+## Modèle de données
 
-## Data Model
+### Dimensions
+Clients, portefeuilles, actifs, instruments, devises, pays, catégories client,
+profils de risque, relationship managers (et leurs groupes), gestionnaires externes,
+agents, entités juridiques, business units, types d'opérations.
 
-### Seeds (ST0 — Raw Avaloq layer)
-- `st0_dim_cli` — Client master data
-- `st0_dim_ptf` — Portfolio master data  
-- `st0_fct_ast` — Pre-calculated positions (Avaloq output)
-- `st0_fct_ope` — Financial operations (BUY/SELL)
-- `st0_fct_xrt` — FX rates
-- `st0_fct_xrt_prices` — Market prices
+### Faits
+- **fct_ast** — positions d'actifs valorisées par date
+- **fct_ope** — opérations financières (achats, ventes, versements, retraits)
+- **fct_mvt** — mouvements titres et cash rattachés aux opérations
+- **fct_ptf** — performance mensuelle des portefeuilles (AUM, P&L, NNM, flux YTD/MTD/DTD)
+- **fct_xrt** — taux de change datés
 
-### Staging
-- `stg_dim_cli` — Cleaned client dimension
-- `stg_dim_ptf` — Cleaned portfolio dimension
-- `stg_fct_ast` — Cleaned position facts
-- `stg_fct_ope` — Cleaned operations
-- `stg_set_cal` — Dynamic banking calendar (month-end dates from 2024 to today)
+### Gestion multi-devises
 
-### Snapshots
-- `clients_snapshot` — Full client history with `dbt_valid_from` / `dbt_valid_to`
-- `portfolio_snapshot` — Full portfolio history
+Un client dont la devise de référence est le CHF veut voir l'ensemble de ses
+portefeuilles — quelle que soit leur devise locale — convertis en CHF.
+Chaque montant financier est donc exposé sur plusieurs axes :
 
-### Intermediate
-- `int_dim_cli` — Client dimension × banking calendar (one row per client per month)
-- `int_dim_ptf` — Portfolio dimension × banking calendar
-- `int_fct_ast` — Positions enriched with client hierarchy
-- `int_ptf_idx` — Central index: portfolios × calendar × positions with forward fill
+- **natif** — dans la devise de la position/opération
+- **_ptf** — converti dans la devise du portefeuille (via pivot CHF)
+- **_ref** — converti en CHF, devise de référence de la banque
 
-### Marts
-- `mart_portfolio_performance` — Portfolio valuation with FX conversion
-- `mart_client_exposure` — Client exposure by asset with FX conversion to base currency
+Les conversions utilisent le taux de change **à la date du fait**, jamais un taux fixe.
 
----
+## Stack technique
 
-## Key Technical Concepts
+- **dbt-core** (transformation) — DuckDB en dev, Snowflake en cible production
+- **Airflow** (Astronomer Runtime) — orchestration
+- **GitHub Actions** — CI/CD
+- **dbt packages** : dbt_utils, dbt_expectations
 
-### Banking Calendar
-End-of-month dates from January 2024 to today. The current month uses today's date rather than projecting a future month-end — consistent with how banks report intra-month positions.
+## Démarrage rapide
 
-### SCD Type 2 Historization
-Client and portfolio dimensions are fully historized using DBT snapshots. Each attribute change (category, RM, risk profile) creates a new version with `dbt_valid_from` / `dbt_valid_to` timestamps — equivalent to `VR_DWH_BEG` / `VR_DWH_END` in Avaloq's native DWH architecture.
-
-### Forward Fill of Positions
-Avaloq delivers positions at month-end. The intermediate layer propagates the last known position to all subsequent calendar dates until a new position is received — using `ASOF JOIN` on DuckDB and correlated subqueries on Snowflake.
-
-### Multi-Currency Support
-FX rates are applied to convert positions to a base currency (USD), with the last known rate propagated forward when no new rate is available for a given date.
-
----
-
-## 🛠️ Tech Stack
-
-| Tool | Usage |
-|---|---|
-| **DBT Core** | Data transformation framework |
-| **Snowflake** | Production data warehouse |
-| **DuckDB** | Local development |
-| **dbt-utils** | Additional test macros |
-| **SQLFluff** | SQL linting and formatting |
-
----
-
-## Data Quality
-
-**37 data tests** covering:
-- `not_null` on all critical columns
-- `unique` on primary keys
-- `accepted_values` on business codes (BUY/SELL, PRIVATE/RETAIL, GROWTH/BALANCED/CONSERV)
-- `relationships` for referential integrity across dimensions
-
----
-
-## Getting Started
-
-### Prerequisites
+### Prérequis
 - Python 3.9+
-- DBT Core 1.10+
+- dbt-core + dbt-duckdb (`pip install dbt-core dbt-duckdb`)
 
-### Local Development (DuckDB)
+### Lancer le pipeline
 
 ```bash
-# Clone the repository
-git clone https://github.com/ThouvenotJeremy/banking-dbt-pipeline.git
-cd banking-dbt-pipeline/banking_pipeline
+# Installer les dépendances dbt
+dbt deps
 
-# Create virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
+# Charger les données sources
+dbt seed --full-refresh
 
-# Install dependencies
-pip install dbt-core dbt-duckdb sqlfluff sqlfluff-templater-dbt
-
-# Run the full pipeline
-dbt seed
+# Construire les couches dans l'ordre
+dbt run --select staging
 dbt snapshot
-dbt run
+dbt run --select intermediate
+dbt run --select marts
+
+# Lancer les tests
 dbt test
 ```
 
-### Production (Snowflake)
-
-Add a `prod` target to your `profiles.yml`:
+Le profil DuckDB local (`~/.dbt/profiles.yml`) :
 
 ```yaml
 banking_pipeline:
+  target: dev
   outputs:
     dev:
       type: duckdb
       path: dev.duckdb
-      threads: 1
-    prod:
-      type: snowflake
-      account: YOUR_ACCOUNT
-      user: YOUR_USER
-      password: YOUR_PASSWORD
-      role: ACCOUNTADMIN
-      database: BANKING_DBT
-      warehouse: COMPUTE_WH
-      schema: PUBLIC
       threads: 4
-  target: dev
 ```
 
-```bash
-dbt seed --target prod
-dbt snapshot --target prod
-dbt run --target prod
-dbt test --target prod
-```
+## Orchestration
 
----
+Le pipeline est orchestré par un DAG Airflow qui respecte l'ordre des couches.
+Voir [`orchestration/airflow/`](orchestration/airflow/) pour le détail et
+les instructions de lancement en local.
+seed → run staging → snapshot → run intermediate → run marts → test
 
-## 📁 Project Structure
+Planification : jours ouvrés à 23h, après clôture des marchés.
 
-```
-banking_pipeline/
+## CI/CD
+
+Chaque push et pull request sur `main` déclenche automatiquement le pipeline
+complet (seed → staging → snapshot → run → test) sur DuckDB via GitHub Actions.
+Voir [`.github/workflows/dbt_ci.yml`](.github/workflows/dbt_ci.yml).
+
+## Structure du projet
+banking-dbt-pipeline/
 ├── models/
 │   ├── staging/
-│   │   ├── stg_dim_cli.sql
-│   │   ├── stg_dim_ptf.sql
-│   │   ├── stg_fct_ast.sql
-│   │   ├── stg_fct_ope.sql
-│   │   ├── stg_set_cal.sql
-│   │   ├── sources.yml
-│   │   └── schema.yml
-│   ├── intermediate/
-│   │   ├── int_dim_cli.sql
-│   │   ├── int_dim_ptf.sql
-│   │   ├── int_fct_ast.sql
-│   │   ├── int_ptf_idx.sql
-│   │   └── schema.yml
-│   └── marts/
-│       ├── mart_portfolio_performance.sql
-│       └── mart_client_exposure.sql
-├── snapshots/
-│   ├── clients_snapshot.sql
-│   └── portfolio_snapshot.sql
-├── seeds/
-│   ├── st0_dim_cli.csv
-│   ├── st0_dim_ptf.csv
-│   ├── st0_fct_ast.csv
-│   ├── st0_fct_ope.csv
-│   ├── st0_fct_xrt.csv
-│   └── st0_fct_xrt_prices.csv
-├── dbt_project.yml
-├── packages.yml
-└── profiles.yml
-```
+│   │   ├── dimensions/       # stg des référentiels
+│   │   └── faits/            # stg des tables de faits
+│   ├── intermediate/         # SCD2, enrichissement, conversion devises
+│   └── marts/                # data marts BI
+├── seeds/                    # données sources (ST0)
+├── snapshots/                # SCD2 clients et portefeuilles
+├── tests/                    # tests singuliers
+├── macros/                   # macros réutilisables
+├── orchestration/airflow/    # DAG Airflow (Astronomer)
+└── .github/workflows/        # CI/CD
 
----
+## Auteur
 
-## Author
-
-**Jérémy Thouvenot** — Data & BI Consultant  
-5 years in Swiss private banking (Lombard Odier, CA Indosuez, Capital Union Bank, Hinduja Bank)  
-Expert in Avaloq/Azqore data pipelines, Talend, Qlik Sense, Power BI
-
-[Malt Profile](https://www.malt.fr/profile/jeremythouvenot) | [LinkedIn](https://www.linkedin.com/in/jeremy-thouvenot/)
+**Jérémy Thouvenot** — Consultant Data & BI, spécialisé dans les institutions
+financières de la région genevoise. Expertise en ETL/ELT, dbt, et reporting
+pour la banque privée.
