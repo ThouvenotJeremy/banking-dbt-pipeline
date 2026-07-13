@@ -30,13 +30,13 @@ prêts pour le reporting BI (AUM, performance, exposition client, NNM).
 ```mermaid
 graph TD
     subgraph ST0["ST0 — Sources (seeds)"]
-        S0D[Dimensionscli, ptf, ast, ccy, cty...]
-        S0F[Faitsfct_ast, fct_ope, fct_mvt, fct_ptf, fct_xrt]
+        S0D[Dimensions<br/>cli, ptf, ast, ccy, cty...]
+        S0F[Faits<br/>fct_ast, fct_ope, fct_mvt, fct_ptf, fct_xrt]
     end
 
     subgraph STG["Staging — Extraction + métadonnées techniques"]
-        SGD[stg dimensionsincrémental, ID technique]
-        SGF[stg faitsincrémental, immuable]
+        SGD[stg dimensions<br/>incrémental, ID technique]
+        SGF[stg faits<br/>incrémental, immuable]
     end
 
     subgraph SNAP["Snapshots — SCD2"]
@@ -45,8 +45,8 @@ graph TD
     end
 
     subgraph INT["Intermediate — Logique métier"]
-        ID[int_cli, int_ptf, int_inshistorisés + enrichis]
-        IF[int_fct_ast, int_fct_ope,int_fct_mvt, int_fct_ptfconversion multi-devises]
+        ID[int_cli, int_ptf, int_ins<br/>historisés + enrichis]
+        IF[int_fct_ast, int_fct_ope,<br/>int_fct_mvt, int_fct_ptf<br/>conversion multi-devises]
     end
 
     subgraph MART["Marts — BI ready"]
@@ -154,8 +154,12 @@ banking_pipeline:
 Le pipeline est orchestré par un DAG Airflow qui respecte l'ordre des couches.
 Voir [`orchestration/airflow/`](orchestration/airflow/) pour le détail et
 les instructions de lancement en local.
-seed → run staging → snapshot → run intermediate → run marts → test
 
+```
+seed → run staging → snapshot → run intermediate → run marts → test
+```
+
+---
 Planification : jours ouvrés à 23h, après clôture des marchés.
 
 ## CI/CD
@@ -165,6 +169,7 @@ complet (seed → staging → snapshot → run → test) sur DuckDB via GitHub A
 Voir [`.github/workflows/dbt_ci.yml`](.github/workflows/dbt_ci.yml).
 
 ## Structure du projet
+```
 banking-dbt-pipeline/
 ├── models/
 │   ├── staging/
@@ -178,9 +183,15 @@ banking-dbt-pipeline/
 ├── macros/                   # macros réutilisables
 ├── orchestration/airflow/    # DAG Airflow (Astronomer)
 └── .github/workflows/        # CI/CD
+```
+
+---
 
 ## Auteur
 
-**Jérémy Thouvenot** — Consultant Data & BI, spécialisé dans les institutions
-financières de la région genevoise. Expertise en ETL/ELT, dbt, et reporting
-pour la banque privée.
+**Jérémy Thouvenot** — Consultant Data & BI
+
+5 ans d'expérience en banque privée suisse (Lombard Odier, CA Indosuez,Capital Union Bank, Hinduja Bank). Spécialisé dans les pipelines de données Avaloq/Azqore, Talend, Qlik Sense et Power BI, pour les institutions financières de la région genevoise.
+
+[Profil Malt](https://www.malt.fr/profile/jeremythouvenot) ·
+[LinkedIn](https://www.linkedin.com/in/jeremy-thouvenot/)
