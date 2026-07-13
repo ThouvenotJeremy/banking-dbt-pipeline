@@ -2,195 +2,277 @@ version: 2
 
 models:
   - name: int_cli
-    description: "Clients enrichis avec suivi SCD Type 2. Une ligne par client et par date de fait (dt_fct)."
+    description: "Clients historisés via SCD2. Une ligne par client et par date de fait."
     columns:
       - name: dt_fct
-        description: "Date de fait issue du calendrier"
+        description: "Date de fait"
         tests:
           - not_null
-      - name: client_id
-        description: "Identifiant unique du client"
+      - name: cd_cli
+        description: "Code unique du client"
         tests:
           - not_null
-      - name: client_name
+      - name: lb_cli
         description: "Nom complet du client"
         tests:
           - not_null
-      - name: client_category
-        description: "Catégorie du client : PRIVATE ou RETAIL"
+      - name: lb_cli_alt
+        description: "Nom alternatif"
+      - name: cd_cli_cat
+        description: "Catégorie client"
         tests:
           - not_null
-          - accepted_values:
-              arguments:
-                values: ['PRIVATE', 'RETAIL']
-      - name: currency
+      - name: lb_cli_cat
+        description: "Libellé catégorie client"
+        tests:
+          - not_null
+      - name: cd_ccy
         description: "Devise de référence du client"
         tests:
           - not_null
-          - accepted_values:
-              arguments:
-                values: ['USD', 'CHF', 'EUR', 'GBP']
-      - name: country
+      - name: cd_cty_dom
         description: "Pays de domicile"
         tests:
           - not_null
-      - name: relationship_manager_id
-        description: "RM responsable du client"
+      - name: lb_cty_dom
+        description: "Libellé pays de domicile"
         tests:
           - not_null
-      - name: opening_date
-        description: "Date d'ouverture du client"
+      - name: cd_cty_nat
+        description: "Pays de nationalité"
+      - name: cd_mng_rel
+        description: "Relationship manager"
         tests:
           - not_null
-      - name: closing_date
-        description: "Date de clôture du client (null si actif)"
-      - name: loaded_at
-        description: "Date de chargement depuis la source"
+      - name: lb_mng_rel
+        description: "Nom du relationship manager"
+        tests:
+          - not_null
+      - name: dt_cre
+        description: "Date de création du client"
+        tests:
+          - not_null
+      - name: dt_clo
+        description: "Date de clôture"
+      - name: ts_stg
+        description: "Timestamp de chargement"
+        tests:
+          - not_null
       - name: updated_at
-        description: "Horodatage de la dernière mise à jour de l'enregistrement SCD2"
-      - name: valid_from
-        description: "Début de validité de l'enregistrement SCD2"
+        description: "Dernière mise à jour du snapshot"
         tests:
           - not_null
-      - name: nationality
-        description: "Pays de nationalité du client (peut différer du domicile)"
+      - name: valid_from
+        description: "Début de validité de la version"
+        tests:
+          - not_null
+      - name: valid_to
+        description: "Fin de validité (null si version courante)"
 
   - name: int_ptf
-    description: "Portefeuilles enrichis avec suivi SCD Type 2. Une ligne par portefeuille et par date de fait (dt_fct)."
+    description: "Portefeuilles historisés via SCD2. Une ligne par portefeuille et par date de fait."
     columns:
       - name: dt_fct
-        description: "Date de fait issue du calendrier"
+        description: "Date de fait"
         tests:
           - not_null
-      - name: ptf_id
-        description: "Identifiant unique du portefeuille"
+      - name: cd_ptf
+        description: "Code unique du portefeuille"
         tests:
           - not_null
-      - name: ptf_name
+      - name: lb_ptf
         description: "Libellé du portefeuille"
         tests:
           - not_null
-      - name: client_id
-        description: "Client propriétaire du portefeuille"
+      - name: lb_ptf_alt
+        description: "Libellé alternatif"
+      - name: cd_cli
+        description: "Client propriétaire"
         tests:
           - not_null
-      - name: currency
-        description: "Devise de référence du portefeuille"
+      - name: cd_ccy
+        description: "Devise du portefeuille"
         tests:
           - not_null
-          - accepted_values:
-              arguments:
-                values: ['USD', 'CHF', 'EUR', 'GBP']
-      - name: risk_profile
-        description: "Profil de risque : GROWTH, BALANCED, CONSERV"
+      - name: lb_ccy
+        description: "Libellé devise"
         tests:
           - not_null
-          - accepted_values:
-              arguments:
-                values: ['GROWTH', 'BALANCED', 'CONSERV']
-      - name: loaded_at
-        description: "Date de chargement depuis la source"
-      - name: updated_at
-        description: "Horodatage de la dernière mise à jour de l'enregistrement SCD2"
-      - name: valid_from
-        description: "Début de validité de l'enregistrement SCD2"
+      - name: cd_prf
+        description: "Profil de risque"
         tests:
           - not_null
-      - name: manager_group_name
-        description: "Nom du groupe du manager"
+      - name: lb_prf
+        description: "Libellé profil de risque"
         tests:
           - not_null
-      - name: ext_manager_id
-        description: "Gestionnaire externe mandaté (null si gérance interne)"
-      - name: ext_manager_name
-        description: "Nom du gestionnaire externe"
-      - name: agent_id
+      - name: cd_mng
+        description: "Relationship manager"
+        tests:
+          - not_null
+      - name: lb_mng
+        description: "Nom du manager"
+        tests:
+          - not_null
+      - name: cd_mng_grp
+        description: "Groupe du manager"
+        tests:
+          - not_null
+      - name: lb_mng_grp
+        description: "Nom du groupe"
+        tests:
+          - not_null
+      - name: cd_mng_ext
+        description: "Gestionnaire externe"
+      - name: lb_mng_ext
+        description: "Nom gestionnaire externe"
+      - name: cd_agn
         description: "Agent de distribution"
-      - name: agent_name
-        description: "Nom de l'agent"
-      - name: entity_id
-        description: "Entité juridique de rattachement"
+      - name: lb_agn
+        description: "Nom agent"
+      - name: cd_ent
+        description: "Entité juridique"
         tests:
           - not_null
-      - name: entity_name
-        description: "Nom de l'entité juridique"
+      - name: lb_ent
+        description: "Nom entité juridique"
         tests:
           - not_null
-      - name: business_unit_id
-        description: "Business unit responsable"
+      - name: cd_buu
+        description: "Business unit"
         tests:
           - not_null
-      - name: business_unit_name
-        description: "Nom de la business unit"
+      - name: lb_buu
+        description: "Nom business unit"
         tests:
           - not_null
+      - name: dt_cre
+        description: "Date d'ouverture"
+        tests:
+          - not_null
+      - name: dt_clo
+        description: "Date de clôture"
+      - name: ts_stg
+        description: "Timestamp de chargement"
+        tests:
+          - not_null
+      - name: updated_at
+        description: "Dernière mise à jour snapshot"
+        tests:
+          - not_null
+      - name: valid_from
+        description: "Début de validité"
+        tests:
+          - not_null
+      - name: valid_to
+        description: "Fin de validité"
 
   - name: int_fct_ast
-    description: "Positions d'actifs enrichies avec le client de rattachement. Une ligne par position."
+    description: "Positions d'actifs enrichies : client de rattachement + montants convertis en devise portefeuille (_PTF via pivot CHF) et en CHF (_REF). Modèle incrémental."
+    config:
+      materialized: incremental
     columns:
-      - name: fct_ast_id
-        description: "Identifiant technique unique de la position"
+      - name: id_stg_fct_ast
+        description: "Identifiant technique de la position (issu de stg)"
+        tests:
+          - not_null
+      - name: cd_fct_ast
+        description: "Identifiant unique de la position"
         tests:
           - not_null
           - unique
-      - name: pos_id
-        description: "Identifiant de la position"
+      - name: cd_pos
+        description: "Code de la position"
         tests:
           - not_null
-      - name: pos_typ_id
-        description: "Type de position"
+      - name: cd_pos_typ
+        description: "Type de position (T/C)"
         tests:
           - not_null
-      - name: ptf_id
+      - name: cd_ptf
         description: "Portefeuille de rattachement"
         tests:
           - not_null
-      - name: client_id
+      - name: cd_cli
         description: "Client de rattachement (via portefeuille)"
         tests:
           - not_null
-      - name: asset_id
-        description: "Identifiant de l'actif"
+      - name: dt_fct
+        description: "Date de valorisation"
         tests:
           - not_null
-      - name: currency
+      - name: cd_ccy
         description: "Devise de la position"
         tests:
           - not_null
-      - name: quantity
+      - name: cd_ins
+        description: "Instrument financier"
+        tests:
+          - not_null
+      - name: cd_ast
+        description: "Actif financier"
+        tests:
+          - not_null
+      - name: lb_fct_ast
+        description: "Libellé de la position"
+      - name: qt_ast
         description: "Quantité détenue"
         tests:
           - not_null
-      - name: amount_position
-        description: "Valorisation en devise locale"
+      - name: mt_ast
+        description: "Valorisation en devise de la position"
         tests:
           - not_null
-      - name: amount_position_ref
-        description: "Valorisation en devise de référence — utiliser pour tous les calculs AUM cross-currency"
+      - name: mt_aci
+        description: "Intérêts courus en devise de la position"
         tests:
           - not_null
-      - name: amount_position_ptf
+      - name: mt_pnl
+        description: "P&L en devise de la position"
+        tests:
+          - not_null
+      - name: xrt_rate_pos
+        description: "Taux de change devise position → CHF"
+        tests:
+          - not_null
+      - name: xrt_rate_ptf
+        description: "Taux de change devise portefeuille → CHF"
+        tests:
+          - not_null
+      - name: mt_ast_ptf
         description: "Valorisation en devise du portefeuille"
         tests:
           - not_null
-      - name: accrued_interest_ref
-        description: "Intérêts courus en devise de référence"
+      - name: mt_aci_ptf
+        description: "Intérêts courus en devise du portefeuille"
         tests:
           - not_null
-      - name: pnl_ref
-        description: "P&L de la période en devise de référence"
+      - name: mt_pnl_ptf
+        description: "P&L en devise du portefeuille"
         tests:
           - not_null
-      - name: net_change_ref
-        description: "Variation nette de la position en devise de référence"
+      - name: mt_ast_ref
+        description: "Valorisation en CHF (devise de référence banque)"
         tests:
           - not_null
-      - name: weight_ptf
+      - name: mt_aci_ref
+        description: "Intérêts courus en CHF"
+        tests:
+          - not_null
+      - name: mt_pnl_ref
+        description: "P&L en CHF"
+        tests:
+          - not_null
+      - name: rt_prm
         description: "Poids de la position dans le portefeuille"
         tests:
           - not_null
-      - name: value_date
-        description: "Date de valorisation"
+      - name: rt_pam
+        description: "Performance accumulée"
+        tests:
+          - not_null
+      - name: pc_twr
+        description: "Time-weighted return"
         tests:
           - not_null
 
@@ -275,71 +357,428 @@ models:
             tests:
               - not_null
 
-          - name: int_fct_ptf
-            description: "Faits portefeuilles mensuels en couche intermédiaire. Renommage des colonnes stg vers nomenclature métier. Une ligne par portefeuille et par date."
-            columns:
-              - name: fct_ptf_id
-                description: "Identifiant technique unique"
-                tests:
-                  - not_null
-                  - unique
-              - name: ptf_id
-                description: "Portefeuille"
-                tests:
-                  - not_null
-              - name: dt_fct
-                description: "Date de fait"
-                tests:
-                  - not_null
-              - name: pc_ptf
-                description: "Poids relatif du portefeuille"
-                tests:
-                  - not_null
-              - name: mt_net
-                description: "Actif net en devise du portefeuille"
-                tests:
-                  - not_null
-              - name: mt_aci
-                description: "Intérêts courus en devise du portefeuille"
-                tests:
-                  - not_null
-              - name: mt_lia
-                description: "Passif en devise du portefeuille"
-                tests:
-                  - not_null
-              - name: mt_pnl
-                description: "P&L en devise du portefeuille"
-                tests:
-                  - not_null
-              - name: mt_pnc
-                description: "Variation nette en devise du portefeuille"
-                tests:
-                  - not_null
-              - name: mt_inc
-                description: "Flux entrants en devise du portefeuille"
-                tests:
-                  - not_null
-              - name: mt_out
-                description: "Flux sortants en devise du portefeuille"
-                tests:
-                  - not_null
-              - name: mt_nnm_inc
-                description: "NNM entrant en devise du portefeuille"
-                tests:
-                  - not_null
-              - name: mt_nnm_out
-                description: "NNM sortant en devise du portefeuille"
-                tests:
-                  - not_null
-              - name: mt_int_inc
-                description: "Flux d'intérêts entrants en devise du portefeuille"
-                tests:
-                  - not_null
-              - name: mt_int_out
-                description: "Flux d'intérêts sortants en devise du portefeuille"
-                tests:
-                  - not_null
-              - name: loaded_at
-                description: "Date de chargement"
-                tests:
-                  - not_null
+
+  - name: int_fct_ope
+    description: "Opérations enrichies : client + montants convertis en devise portefeuille (_PTF via pivot CHF) et en CHF (_REF), aux taux de la date comptable. Modèle incrémental."
+    config:
+      materialized: incremental
+    columns:
+      - name: id_stg_fct_ope
+        description: "Identifiant technique (issu de stg)"
+        tests:
+          - not_null
+      - name: cd_fct_ope
+        description: "Identifiant unique de l'opération"
+        tests:
+          - not_null
+          - unique
+      - name: cd_ope
+        description: "Code métier"
+        tests:
+          - not_null
+      - name: nb_seq_ptc
+        description: "Numéro de séquence"
+        tests:
+          - not_null
+      - name: lb_fct_ope
+        description: "Libellé de l'opération"
+      - name: cd_fct_ope_ext
+        description: "Référence externe"
+      - name: cd_ope_typ
+        description: "Type d'opération"
+        tests:
+          - not_null
+      - name: cd_deb_crd
+        description: "Sens débit/crédit"
+        tests:
+          - not_null
+      - name: yn_pro
+        description: "Provisoire ou définitif"
+        tests:
+          - not_null
+      - name: cd_pos
+        description: "Position concernée"
+        tests:
+          - not_null
+      - name: cd_ptf
+        description: "Portefeuille"
+        tests:
+          - not_null
+      - name: cd_cli
+        description: "Client de rattachement"
+        tests:
+          - not_null
+      - name: cd_ccy_ope
+        description: "Devise de l'opération"
+        tests:
+          - not_null
+      - name: cd_ccy_ptf
+        description: "Devise du portefeuille"
+        tests:
+          - not_null
+      - name: cd_ast
+        description: "Actif"
+        tests:
+          - not_null
+      - name: cd_ins
+        description: "Instrument"
+        tests:
+          - not_null
+      - name: dt_cta
+        description: "Date comptable"
+        tests:
+          - not_null
+      - name: dt_exe
+        description: "Date d'exécution"
+        tests:
+          - not_null
+      - name: dt_val
+        description: "Date de valeur"
+        tests:
+          - not_null
+      - name: qt_ope
+        description: "Quantité"
+        tests:
+          - not_null
+      - name: mt_ope
+        description: "Montant brut en devise de l'opération"
+        tests:
+          - not_null
+      - name: mt_net
+        description: "Montant net en devise de l'opération"
+        tests:
+          - not_null
+      - name: xrt_rate_ope
+        description: "Taux devise opération → CHF"
+        tests:
+          - not_null
+      - name: xrt_rate_ptf
+        description: "Taux devise portefeuille → CHF"
+        tests:
+          - not_null
+      - name: mt_ope_ptf
+        description: "Montant brut en devise du portefeuille"
+        tests:
+          - not_null
+      - name: mt_net_ptf
+        description: "Montant net en devise du portefeuille"
+        tests:
+          - not_null
+      - name: mt_ope_ref
+        description: "Montant brut en CHF"
+        tests:
+          - not_null
+      - name: mt_net_ref
+        description: "Montant net en CHF"
+        tests:
+          - not_null
+
+  - name: int_fct_mvt
+    description: "Mouvements enrichis : client + montant converti en devise portefeuille (_PTF via pivot CHF) et en CHF (_REF), aux taux de la date comptable. Modèle incrémental."
+    config:
+      materialized: incremental
+    columns:
+      - name: id_stg_fct_mvt
+        description: "Identifiant technique (issu de stg)"
+        tests:
+          - not_null
+      - name: cd_fct_mvt
+        description: "Identifiant unique du mouvement"
+        tests:
+          - not_null
+          - unique
+      - name: cd_pos
+        description: "Position concernée"
+        tests:
+          - not_null
+      - name: cd_fct_ope
+        description: "Opération source"
+        tests:
+          - not_null
+      - name: yn_ext
+        description: "Mouvement externe ou interne"
+        tests:
+          - not_null
+      - name: dt_cta
+        description: "Date comptable"
+        tests:
+          - not_null
+      - name: id_obj_mvt_cat
+        description: "Catégorie du mouvement"
+        tests:
+          - not_null
+      - name: cd_mvt_typ
+        description: "Type de mouvement"
+        tests:
+          - not_null
+      - name: cd_ptf
+        description: "Portefeuille"
+        tests:
+          - not_null
+      - name: cd_cli
+        description: "Client de rattachement"
+        tests:
+          - not_null
+      - name: cd_mvt_res
+        description: "Mode de règlement"
+        tests:
+          - not_null
+      - name: cd_ast
+        description: "Actif"
+        tests:
+          - not_null
+      - name: cd_ins
+        description: "Instrument"
+        tests:
+          - not_null
+      - name: cd_ccy_mvt
+        description: "Devise du mouvement"
+        tests:
+          - not_null
+      - name: cd_ccy_ptf
+        description: "Devise du portefeuille"
+        tests:
+          - not_null
+      - name: mt_mvt
+        description: "Montant en devise du mouvement"
+        tests:
+          - not_null
+      - name: xrt_rate_mvt
+        description: "Taux devise mouvement → CHF"
+        tests:
+          - not_null
+      - name: xrt_rate_ptf
+        description: "Taux devise portefeuille → CHF"
+        tests:
+          - not_null
+      - name: mt_mvt_ptf
+        description: "Montant en devise du portefeuille"
+        tests:
+          - not_null
+      - name: mt_mvt_ref
+        description: "Montant en CHF"
+        tests:
+          - not_null
+
+  - name: int_fct_ptf
+    description: "Performance mensuelle des portefeuilles enrichie : client + montants natifs (devise portefeuille) et convertis en CHF (_ref), aux taux de la date de fait. Horizons YTD/MTD/DTD. Modèle incrémental."
+    config:
+      materialized: incremental
+    columns:
+      - name: id_stg_fct_ptf
+        description: "Identifiant technique (issu de stg)"
+        tests:
+          - not_null
+      - name: cd_fct_ptf
+        description: "Identifiant unique du fait"
+        tests:
+          - not_null
+          - unique
+      - name: cd_ptf
+        description: "Portefeuille"
+        tests:
+          - not_null
+      - name: cd_cli
+        description: "Client de rattachement"
+        tests:
+          - not_null
+      - name: cd_ccy_ptf
+        description: "Devise du portefeuille"
+        tests:
+          - not_null
+      - name: dt_fct
+        description: "Date de fait"
+        tests:
+          - not_null
+      - name: pc_ptf
+        description: "Poids du portefeuille dans l'AUM total"
+        tests:
+          - not_null
+      - name: xrt_rate
+        description: "Taux devise portefeuille → CHF"
+        tests:
+          - not_null
+      - name: mt_net
+        description: "Actif net en devise portefeuille"
+        tests:
+          - not_null
+      - name: mt_net_ref
+        description: "Actif net en CHF"
+        tests:
+          - not_null
+      - name: mt_aci
+        description: "Intérêts courus en devise portefeuille"
+        tests:
+          - not_null
+      - name: mt_aci_ref
+        description: "Intérêts courus en CHF"
+        tests:
+          - not_null
+      - name: mt_lia
+        description: "Passif en devise portefeuille"
+        tests:
+          - not_null
+      - name: mt_lia_ref
+        description: "Passif en CHF"
+        tests:
+          - not_null
+      - name: mt_pnl
+        description: "P&L en devise portefeuille"
+        tests:
+          - not_null
+      - name: mt_pnl_ref
+        description: "P&L en CHF"
+        tests:
+          - not_null
+      - name: mt_pnc
+        description: "Variation nette en devise portefeuille"
+        tests:
+          - not_null
+      - name: mt_pnc_ref
+        description: "Variation nette en CHF"
+        tests:
+          - not_null
+      - name: mt_inc_ytd
+        description: "Flux entrants YTD en devise portefeuille"
+        tests:
+          - not_null
+      - name: mt_inc_ref_ytd
+        description: "Flux entrants YTD en CHF"
+        tests:
+          - not_null
+      - name: mt_out_ytd
+        description: "Flux sortants YTD en devise portefeuille"
+        tests:
+          - not_null
+      - name: mt_out_ref_ytd
+        description: "Flux sortants YTD en CHF"
+        tests:
+          - not_null
+      - name: mt_nnm_inc_ytd
+        description: "NNM entrant YTD en devise portefeuille"
+        tests:
+          - not_null
+      - name: mt_nnm_inc_ref_ytd
+        description: "NNM entrant YTD en CHF"
+        tests:
+          - not_null
+      - name: mt_nnm_out_ytd
+        description: "NNM sortant YTD en devise portefeuille"
+        tests:
+          - not_null
+      - name: mt_nnm_out_ref_ytd
+        description: "NNM sortant YTD en CHF"
+        tests:
+          - not_null
+      - name: mt_int_inc_ytd
+        description: "Flux intérêts entrants YTD en devise portefeuille"
+        tests:
+          - not_null
+      - name: mt_int_inc_ref_ytd
+        description: "Flux intérêts entrants YTD en CHF"
+        tests:
+          - not_null
+      - name: mt_int_out_ytd
+        description: "Flux intérêts sortants YTD en devise portefeuille"
+        tests:
+          - not_null
+      - name: mt_int_out_ref_ytd
+        description: "Flux intérêts sortants YTD en CHF"
+        tests:
+          - not_null
+      - name: mt_inc_mtd
+        description: "Flux entrants MTD en devise portefeuille"
+        tests:
+          - not_null
+      - name: mt_inc_ref_mtd
+        description: "Flux entrants MTD en CHF"
+        tests:
+          - not_null
+      - name: mt_out_mtd
+        description: "Flux sortants MTD en devise portefeuille"
+        tests:
+          - not_null
+      - name: mt_out_ref_mtd
+        description: "Flux sortants MTD en CHF"
+        tests:
+          - not_null
+      - name: mt_nnm_inc_mtd
+        description: "NNM entrant MTD en devise portefeuille"
+        tests:
+          - not_null
+      - name: mt_nnm_inc_ref_mtd
+        description: "NNM entrant MTD en CHF"
+        tests:
+          - not_null
+      - name: mt_nnm_out_mtd
+        description: "NNM sortant MTD en devise portefeuille"
+        tests:
+          - not_null
+      - name: mt_nnm_out_ref_mtd
+        description: "NNM sortant MTD en CHF"
+        tests:
+          - not_null
+      - name: mt_int_inc_mtd
+        description: "Flux intérêts entrants MTD en devise portefeuille"
+        tests:
+          - not_null
+      - name: mt_int_inc_ref_mtd
+        description: "Flux intérêts entrants MTD en CHF"
+        tests:
+          - not_null
+      - name: mt_int_out_mtd
+        description: "Flux intérêts sortants MTD en devise portefeuille"
+        tests:
+          - not_null
+      - name: mt_int_out_ref_mtd
+        description: "Flux intérêts sortants MTD en CHF"
+        tests:
+          - not_null
+      - name: mt_inc_dtd
+        description: "Flux entrants DTD en devise portefeuille"
+        tests:
+          - not_null
+      - name: mt_inc_ref_dtd
+        description: "Flux entrants DTD en CHF"
+        tests:
+          - not_null
+      - name: mt_out_dtd
+        description: "Flux sortants DTD en devise portefeuille"
+        tests:
+          - not_null
+      - name: mt_out_ref_dtd
+        description: "Flux sortants DTD en CHF"
+        tests:
+          - not_null
+      - name: mt_nnm_inc_dtd
+        description: "NNM entrant DTD en devise portefeuille"
+        tests:
+          - not_null
+      - name: mt_nnm_inc_ref_dtd
+        description: "NNM entrant DTD en CHF"
+        tests:
+          - not_null
+      - name: mt_nnm_out_dtd
+        description: "NNM sortant DTD en devise portefeuille"
+        tests:
+          - not_null
+      - name: mt_nnm_out_ref_dtd
+        description: "NNM sortant DTD en CHF"
+        tests:
+          - not_null
+      - name: mt_int_inc_dtd
+        description: "Flux intérêts entrants DTD en devise portefeuille"
+        tests:
+          - not_null
+      - name: mt_int_inc_ref_dtd
+        description: "Flux intérêts entrants DTD en CHF"
+        tests:
+          - not_null
+      - name: mt_int_out_dtd
+        description: "Flux intérêts sortants DTD en devise portefeuille"
+        tests:
+          - not_null
+      - name: mt_int_out_ref_dtd
+        description: "Flux intérêts sortants DTD en CHF"
+        tests:
+          - not_null

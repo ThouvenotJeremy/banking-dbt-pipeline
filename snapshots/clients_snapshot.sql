@@ -2,10 +2,10 @@
 
 {{
     config(
-        target_schema= 'main' if target.type == 'duckdb' else 'PUBLIC',
-        unique_key='client_id',
+        target_schema='main' if target.type == 'duckdb' else 'PUBLIC',
+        unique_key='cd_cli',
         strategy='timestamp',
-        updated_at='loaded_at'
+        updated_at='ts_stg'
     )
 }}
 

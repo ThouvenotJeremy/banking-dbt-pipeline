@@ -2,10 +2,10 @@
 
 {{
     config(
-        target_schema= 'main' if target.type == 'duckdb' else 'PUBLIC',
-        unique_key='ptf_id',
+        target_schema='main' if target.type == 'duckdb' else 'PUBLIC',
+        unique_key='cd_ptf',
         strategy='timestamp',
-        updated_at='loaded_at'
+        updated_at='ts_stg'
     )
 }}
 
