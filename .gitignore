@@ -4,3 +4,5 @@ dbt_packages/
 logs/
 profiles.yml
 *.duckdb
+.venv/
+.DS_Store
