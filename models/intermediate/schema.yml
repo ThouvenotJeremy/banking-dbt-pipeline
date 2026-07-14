@@ -235,10 +235,18 @@ models:
         description: "Taux de change devise position → CHF"
         tests:
           - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                strictly: true
       - name: xrt_rate_ptf
         description: "Taux de change devise portefeuille → CHF"
         tests:
           - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                strictly: true
       - name: mt_ast_ptf
         description: "Valorisation en devise du portefeuille"
         tests:
@@ -294,6 +302,10 @@ models:
         description: "Poids de la position dans le portefeuille"
         tests:
           - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 1
       - name: rt_pam
         description: "Performance accumulée"
         tests:
@@ -398,10 +410,18 @@ models:
         description: "Taux devise opération → CHF"
         tests:
           - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                strictly: true
       - name: xrt_rate_ptf
         description: "Taux devise portefeuille → CHF"
         tests:
           - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                strictly: true
       - name: mt_ope_ptf
         description: "Montant brut en devise du portefeuille"
         tests:
@@ -511,10 +531,18 @@ models:
         description: "Taux devise mouvement → CHF"
         tests:
           - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                strictly: true
       - name: xrt_rate_ptf
         description: "Taux devise portefeuille → CHF"
         tests:
           - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                strictly: true
       - name: mt_mvt_ptf
         description: "Montant en devise du portefeuille"
         tests:
@@ -567,10 +595,18 @@ models:
         description: "Poids du portefeuille dans l'AUM total"
         tests:
           - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 1
       - name: xrt_rate
         description: "Taux devise portefeuille → CHF"
         tests:
           - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                strictly: true
       - name: mt_net
         description: "Actif net en devise portefeuille"
         tests:

@@ -5,6 +5,17 @@ models:
     description: "Opérations financières avec métadonnées STG. Fact immuable. MT_OPE_PTF, MT_OPE_REF, MT_NET_PTF, MT_NET_REF calculés en int_."
     config:
       materialized: incremental
+    tests:
+      - dbt_expectations.expect_column_pair_values_A_to_be_greater_than_B:
+          arguments:
+            column_A: dt_val
+            column_B: dt_exe
+            or_equal: true
+      - dbt_expectations.expect_column_pair_values_A_to_be_greater_than_B:
+          arguments:
+            column_A: dt_val
+            column_B: dt_cta
+            or_equal: true
     columns:
       - name: id_stg_fct_ope
         description: "Identifiant technique unique séquentiel"
@@ -465,6 +476,9 @@ models:
         description: "Quantité détenue"
         tests:
           - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
       - name: mt_ast
         description: "Valorisation en devise locale"
         tests:
@@ -547,3 +561,7 @@ models:
         description: "Valeur du taux vers CHF"
         tests:
           - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                strictly: true
