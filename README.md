@@ -199,6 +199,17 @@ Chaque push et pull request sur `main` déclenche automatiquement le pipeline
 complet (seed → staging → snapshot → run → test) sur DuckDB via GitHub Actions.
 Voir [`.github/workflows/dbt_ci.yml`](.github/workflows/dbt_ci.yml).
 
+## Passage à l'échelle
+
+Ce projet tourne sur un jeu de données de démonstration (quelques dizaines
+de lignes par table de fait). [`docs/scaling.md`](docs/scaling.md) détaille,
+avec le code réel de ce repo, où les choix actuels casseraient à un volume
+de production bancaire (millions de positions, dizaines de milliers
+d'opérations par jour) et quelles évolutions concrètes y répondraient :
+stratégie incrémentale des faits, génération des ID de dimensions,
+clustering Snowflake, borne du cross join calendrier × SCD2, orchestration
+Airflow.
+
 ## Structure du projet
 ```
 banking-dbt-pipeline/
