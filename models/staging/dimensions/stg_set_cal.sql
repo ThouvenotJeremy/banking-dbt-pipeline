@@ -2,7 +2,7 @@
 
     with months as (
         select unnest(generate_series(
-            date_trunc('month', date '2024-01-01'),
+            date_trunc('month', date '{{ var("start_date") }}'),
             date_trunc('month', current_date),
             interval '1 month'
         )) as month_start
@@ -22,7 +22,7 @@
 
 with months as (
     select
-        dateadd('month', seq4(), date_trunc('month', '2024-01-01'::date)) as month_start
+        dateadd('month', seq4(), date_trunc('month', '{{ var("start_date") }}'::date)) as month_start
     from table(generator(rowcount => 100))
     where month_start <= date_trunc('month', current_date)
 ),
