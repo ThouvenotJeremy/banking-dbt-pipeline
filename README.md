@@ -2,6 +2,10 @@
 
 ![DBT CI](https://github.com/ThouvenotJeremy/banking-dbt-pipeline/actions/workflows/dbt_ci.yml/badge.svg)
 
+📖 **[Documentation dbt en ligne](https://thouvenotjeremy.github.io/banking-dbt-pipeline/)** —
+lineage complet (DAG cliquable) et description de chaque modèle/colonne,
+régénérée à chaque push sur `main`.
+
 Pipeline analytique de bout en bout pour institution financière de banque privée,
 construit avec **dbt** (DuckDB en dev, **Snowflake** en cible production), orchestré
 avec **Airflow**, et validé par **CI/CD** à chaque push. Le développement s'appuie
