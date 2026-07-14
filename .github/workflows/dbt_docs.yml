@@ -1,0 +1,88 @@
+name: DBT Docs
+
+"on":
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: pip install dbt-core dbt-duckdb
+
+      - name: Create profiles.yml
+        run: |
+          mkdir -p ~/.dbt
+          cat << EOF > ~/.dbt/profiles.yml
+          banking_pipeline:
+            outputs:
+              dev:
+                type: duckdb
+                path: dev.duckdb
+                threads: 1
+            target: dev
+          EOF
+
+      - name: DBT Deps
+        run: dbt deps
+
+      - name: DBT Seed
+        run: dbt seed --full-refresh
+
+      - name: DBT Run Staging
+        run: dbt run --select staging
+
+      - name: DBT Snapshot
+        run: dbt snapshot
+
+      - name: DBT Run
+        run: dbt run
+
+      - name: DBT Docs Generate
+        run: dbt docs generate
+
+      - name: Assemble docs site
+        run: |
+          mkdir -p public
+          cp target/index.html public/
+          cp target/catalog.json public/
+          cp target/manifest.json public/
+          if [ -f target/graph.gpickle ]; then cp target/graph.gpickle public/; fi
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
