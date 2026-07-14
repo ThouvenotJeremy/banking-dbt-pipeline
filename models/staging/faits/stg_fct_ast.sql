@@ -18,35 +18,24 @@ max_id as (
 ),
 {% endif %}
 
-enriched as (
+new_records as (
     select
         s.*,
-        {% if is_incremental() %}
-        e.id_stg_fct_ast                                            as existing_id,
-        row_number() over (
-            partition by (e.cd_fct_ast is null)
-            order by s.cd_ptf, s.dt_fct, s.cd_ast
-        )                                                           as rn
-        {% else %}
         row_number() over (order by s.cd_ptf, s.dt_fct, s.cd_ast) as rn
-        {% endif %}
     from source s
     {% if is_incremental() %}
-    left join existing e on s.cd_fct_ast = e.cd_fct_ast
+    where s.cd_fct_ast not in (select cd_fct_ast from existing)
     {% endif %}
 )
 
 select
     cast(
-        coalesce(
-            {% if is_incremental() %}
-            existing_id,
-            (select val from max_id) + rn
-            {% else %}
-            rn
-            {% endif %}
-        ) as decimal(15,0)
-    )                                                               as id_stg_fct_ast,
+        {% if is_incremental() %}
+        (select val from max_id) + rn
+        {% else %}
+        rn
+        {% endif %}
+    as decimal(15,0))                                               as id_stg_fct_ast,
 
     current_timestamp                                               as ts_stg,
     cast(strftime(current_timestamp, '%Y%m%d') as decimal(15,0))   as vr_stg,
@@ -71,4 +60,4 @@ select
     cast(mt_pnl as decimal(19,4))                                   as mt_pnl,
     cast(pc_twr as decimal(26,11))                                  as pc_twr
 
-from enriched
+from new_records
