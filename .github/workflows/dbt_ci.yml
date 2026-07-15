@@ -50,5 +50,8 @@ jobs:
       - name: DBT Run
         run: dbt run
 
+      - name: Check layer dependencies
+        run: python3 scripts/check_layer_dependencies.py
+
       - name: DBT Test
         run: dbt test

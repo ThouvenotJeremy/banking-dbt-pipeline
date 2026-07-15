@@ -60,39 +60,13 @@ daily_aum as (
 ),
 
 ytd_calculation as (
-    select
-        current_aum.dt_fct,
-        current_aum.cd_cli,
-        current_aum.cd_ptf,
-        current_aum.lb_ptf,
-        current_aum.lb_cli,
-        current_aum.cd_cli_cat,
-        current_aum.lb_cli_cat,
-        current_aum.cd_cty_dom,
-        current_aum.lb_cty_dom,
-        current_aum.cd_ccy_cli,
-        current_aum.cd_mng,
-        current_aum.lb_mng,
-        current_aum.cd_prf,
-        current_aum.lb_prf,
-        current_aum.aum             as aum_current,
-        ytd_start.aum               as aum_ytd_start,
-        case
-            when ytd_start.aum is null or ytd_start.aum = 0 then 0
-            else ((current_aum.aum - ytd_start.aum) / ytd_start.aum) * 100
-        end                         as aum_ytd_variation_pct,
-        current_aum.aum - coalesce(ytd_start.aum, 0) as aum_ytd_variation_abs,
-        current_aum.performance_date,
-        current_timestamp           as loaded_at
-    from daily_aum current_aum
-    left join daily_aum ytd_start
-        on  current_aum.cd_cli = ytd_start.cd_cli
-        and current_aum.cd_ptf = ytd_start.cd_ptf
-        and ytd_start.dt_fct = (
-            select min(dt_fct)
-            from {{ ref('stg_set_cal') }}
-            where extract(year from dt_fct) = extract(year from current_aum.dt_fct)
-        )
+    {{ ytd_start_lookup(
+        daily_relation='daily_aum',
+        partition_by=['cd_cli', 'cd_ptf'],
+        date_column='dt_fct',
+        amount_column='aum',
+        calendar_relation=ref('int_set_cal')
+    ) }}
 )
 
 select
@@ -110,12 +84,12 @@ select
     lb_mng,
     cd_prf,
     lb_prf,
-    aum_current,
+    aum                          as aum_current,
     aum_ytd_start,
     aum_ytd_variation_pct,
     aum_ytd_variation_abs,
     performance_date,
-    loaded_at
+    current_timestamp            as loaded_at
 from ytd_calculation
 {% if var("aum_year") is not none %}
 where extract(year from dt_fct) = {{ var("aum_year") }}

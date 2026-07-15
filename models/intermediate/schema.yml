@@ -909,3 +909,20 @@ models:
         description: "Libellé du groupe d'instruments"
         tests:
           - not_null
+
+  - name: int_set_cal
+    description: "Passthrough du calendrier de staging. Existe pour que mart_aum_ytd et mart_rm_performance (qui ont besoin du calendrier pour le calcul YTD) restent sur le pattern marts -> intermediate uniquement, sans exception de couche pour un cas jugé spécial."
+    columns:
+      - name: dt_fct
+        description: "Date de fait"
+        tests:
+          - not_null
+          - unique
+      - name: vr_dwh_cal
+        description: "Version YYYYMMDD de la date"
+        tests:
+          - not_null
+      - name: cd_cal
+        description: "Code calendrier (constant, 1)"
+        tests:
+          - not_null

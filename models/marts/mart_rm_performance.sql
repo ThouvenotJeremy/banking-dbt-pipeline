@@ -8,8 +8,47 @@
     )
 }}
 
-with aum_ytd as (
-    select * from {{ ref('mart_aum_ytd') }}
+with fct_ast as (
+    select * from {{ ref('int_fct_ast') }}
+),
+cli as (
+    select * from {{ ref('int_cli') }}
+),
+ptf_dim as (
+    select * from {{ ref('int_ptf') }}
+),
+
+daily_aum as (
+    select
+        fct_ast.dt_fct,
+        fct_ast.cd_cli,
+        fct_ast.cd_ptf,
+        cli.cd_cli_cat,
+        ptf_dim.cd_mng,
+        ptf_dim.lb_mng,
+        sum(fct_ast.mt_ast_ref)     as aum
+    from fct_ast
+    inner join ptf_dim on fct_ast.cd_ptf = ptf_dim.cd_ptf
+                      and fct_ast.dt_fct = ptf_dim.dt_fct
+    inner join cli on fct_ast.cd_cli = cli.cd_cli
+                  and fct_ast.dt_fct = cli.dt_fct
+    group by
+        fct_ast.dt_fct,
+        fct_ast.cd_cli,
+        fct_ast.cd_ptf,
+        cli.cd_cli_cat,
+        ptf_dim.cd_mng,
+        ptf_dim.lb_mng
+),
+
+ytd_calculation as (
+    {{ ytd_start_lookup(
+        daily_relation='daily_aum',
+        partition_by=['cd_cli', 'cd_ptf'],
+        date_column='dt_fct',
+        amount_column='aum',
+        calendar_relation=ref('int_set_cal')
+    ) }}
 ),
 
 ptf as (
@@ -24,13 +63,13 @@ rm_daily_aum as (
         aum.lb_mng,
         ptf.cd_mng_grp,
         ptf.lb_mng_grp,
-        sum(aum.aum_current)                as aum_current,
+        sum(aum.aum)                        as aum_current,
         sum(aum.aum_ytd_start)              as aum_ytd_start,
         count(distinct aum.cd_cli)          as client_count,
         count(distinct aum.cd_ptf)          as portfolio_count,
         count(distinct aum.cd_cli_cat)      as category_count,
         current_date                        as performance_date
-    from aum_ytd aum
+    from ytd_calculation aum
     left join ptf on aum.cd_mng = ptf.cd_mng
     group by
         aum.dt_fct,
@@ -50,11 +89,8 @@ rm_performance as (
         current.lb_mng_grp,
         cast(current.aum_current as double)     as aum_current,
         cast(current.aum_ytd_start as double)   as aum_ytd_start,
-        case
-            when current.aum_ytd_start is null or current.aum_ytd_start = 0 then 0
-            else ((current.aum_current - current.aum_ytd_start) / current.aum_ytd_start) * 100
-        end                                     as aum_ytd_variation_pct,
-        cast(current.aum_current - coalesce(current.aum_ytd_start, 0) as double) as aum_ytd_variation_abs,
+        cast({{ ytd_variation_pct('current.aum_current', 'current.aum_ytd_start') }} as double) as aum_ytd_variation_pct,
+        cast({{ ytd_variation_abs('current.aum_current', 'current.aum_ytd_start') }} as double)  as aum_ytd_variation_abs,
         current.client_count,
         current.portfolio_count,
         current.category_count,
