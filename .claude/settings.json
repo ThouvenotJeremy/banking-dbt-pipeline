@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$(jq -r '.tool_input.file_path // .tool_response.filePath // empty')\"; case \"$f\" in *.yml|*.yaml) python3 .claude/hooks/validate_yaml.py \"$f\" ;; esac",
+            "statusMessage": "Validating YAML (syntax, duplicate keys, structure, dbt parse)..."
+          }
+        ]
+      }
+    ]
+  }
+}
