@@ -4,6 +4,29 @@ sources:
   - name: st0
     schema: "{{ 'main' if target.type == 'duckdb' else 'PUBLIC' }}"
     description: "Couche de données brutes simulant le core banking Avaloq. Toutes les tables sont préfixées st0_."
+    # Fraîcheur de source — désactivée en démo, prête pour la prod.
+    #
+    # Aujourd'hui les tables st0_* sont des seeds statiques : aucune n'expose de
+    # colonne de chargement (loaded_at / extracted_at). Toutes les colonnes de
+    # date présentes (dt_fct, dt_cta, dt_cre, dt_val...) sont des dates métier,
+    # pas des timestamps d'extraction — les utiliser comme loaded_at_field
+    # mesurerait "les données métier sont-elles récentes", pas "l'extract a-t-il
+    # tourné", ce qui n'est pas la même garantie et ne doit pas être présenté
+    # comme tel.
+    #
+    # Quand une vraie extraction Avaloq quotidienne alimentera ces tables, elle
+    # devra exposer une colonne de chargement (ex: EXTRACTED_AT), et ce bloc
+    # pourra être décommenté (avec loaded_at_field renseigné) pour détecter un
+    # extract silencieusement en retard :
+    #
+    # freshness:
+    #   warn_after:
+    #     count: 24
+    #     period: hour
+    #   error_after:
+    #     count: 48
+    #     period: hour
+    # loaded_at_field: extracted_at
     tables:
       - name: st0_cli
         description: "Référentiel clients brut extrait du core banking. Une ligne par client, état courant uniquement."
