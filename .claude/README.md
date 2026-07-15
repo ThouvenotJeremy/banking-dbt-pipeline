@@ -109,3 +109,50 @@ validation sans confirmation manuelle à chaque étape. Les opérations
 destructives (`push --force`, `reset --hard`, etc.) restent hors des
 règles par défaut de l'agent, qui demande confirmation avant de les
 exécuter même si `git push *` est présent dans la liste.
+
+## 4. Le hook de validation YAML
+
+Défini dans `.claude/settings.json` (versionné, contrairement à
+`settings.local.json`) : un hook `PostToolUse` sur `Write|Edit` qui
+filtre lui-même sur les fichiers `.yml`/`.yaml` et appelle
+`.claude/hooks/validate_yaml.py "$f"` après chaque écriture. Le script
+bloque (exit 2, message renvoyé à l'agent) si l'un des trois checks
+échoue :
+
+1. un loader YAML qui lève une erreur sur une **clé dupliquée** au lieu
+   de la tolérer silencieusement ;
+2. un check structurel : une entrée sous `columns:` ne doit contenir que
+   des clés de colonne (`name`, `description`, `tests`, ...), jamais des
+   clés réservées au niveau modèle (`columns`, `config`, ...) ;
+3. `dbt parse`, en dernier filtre.
+
+**Pourquoi ce hook existe :** deux bugs réels se sont produits pendant le
+développement de ce projet et ont été trouvés tardivement, après coup —
+un bloc `tests:` dupliqué dans `int_fct_mvt` (qui a fait disparaître
+silencieusement un test `unique`), et une indentation cassée dans un
+`schema.yml` qui a fait glisser l'entrée d'un modèle dans la liste
+`columns:` du modèle précédent (qui a fait disparaître silencieusement
+les 38 tests de ce modèle). Dans les deux cas, rien n'a levé d'erreur au
+moment de l'édition.
+
+**Pourquoi les approches naïves ne suffisent pas — vérifié empiriquement
+avant d'écrire le hook, pas supposé :**
+
+- `yaml.safe_load` seul ne détecte ni l'un ni l'autre cas : le spec YAML
+  autorise les clés dupliquées dans un mapping (la dernière écrase
+  silencieusement les précédentes), et une entrée mal indentée qui reste
+  syntaxiquement valide n'est pas une erreur de parsing.
+- `dbt parse` — même avec `--warn-error` — ne détecte non plus **aucun**
+  des deux cas : exit 0 silencieux à chaque fois. `dbt list` derrière
+  confirme que le test `unique` ou les 38 tests du modèle ont bien
+  disparu du manifest, sans qu'aucune commande dbt ne l'ait signalé.
+
+**Limite connue, gardée volontairement dans le hook malgré tout :**
+`dbt parse` reste utile comme 3e filtre pour de vraies casses de syntaxe
+(indentation qui casse complètement le YAML, Jinja invalide), mais il
+s'est avéré plus permissif que prévu sur d'autres cas testés pendant la
+construction de ce hook : une `ref()` cassée dans les arguments d'un
+test (`to: ref('modele_qui_n_existe_pas')`), un nom de test macro
+inexistant, et une valeur `materialized` invalide passent tous les
+trois avec exit 0, sans même apparaître dans `dbt list`. Ces trois cas
+ne sont pas couverts par ce hook.
