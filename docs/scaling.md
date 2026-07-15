@@ -294,3 +294,21 @@ Airflow ne voit qu'une seule tâche `dbt_run_marts` — la parallélisation
   ça sort du périmètre d'un batch dbt quotidien et demande une réflexion
   distincte (ingestion streaming en amont, dbt sur une fenêtre plus courte)
   — non traité ici, ce n'est pas qu'un problème d'orchestration.
+
+## 6. Incident : `stg_set_cal` incrémental sans `unique_key`
+
+`stg_set_cal` est `materialized='incremental'` depuis sa création, sans
+`unique_key` : chaque `dbt run` dupliquait silencieusement le calendrier
+entier par-dessus l'existant. Le bug était invisible car aucun test
+d'unicité ne portait sur `dt_fct` — il n'est apparu qu'en créant
+`int_set_cal` (passthrough intermediate, section 4), qui lui a reçu un
+test `unique` sur `dt_fct`. Le CI l'a révélé de façon déterministe car il
+build la couche staging deux fois par pipeline (`dbt run --select staging`
+puis `dbt run` complet), doublant les dates à chaque exécution.
+
+Enseignement : un modèle qui **génère** ses données (`generate_series`)
+plutôt que d'en lire une source échappe au réflexe habituel — la question
+du dédoublonnage sur ré-exécution est évidente pour une dimension
+alimentée par une vraie source, moins pour un calendrier généré. Un audit
+complet des 27 autres modèles incrémentaux du projet a confirmé qu'ils
+ont tous un `unique_key` ; `stg_set_cal` était le seul cas.
