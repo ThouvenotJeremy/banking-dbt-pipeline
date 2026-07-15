@@ -33,15 +33,21 @@ c'est un scan complet de la clé métier à chaque exécution, sans aucun
 pruning possible : `NOT IN` ne peut pas s'appuyer sur un ordre ou une
 partition, contrairement à un filtre sur `dt_fct`.
 
-Un détail supplémentaire, plus discret : ce filtre n'existe qu'à la couche
+Un détail supplémentaire, plus discret, avait été repéré par cet audit puis
+corrigé (commit `4cf79a9`, 2026-07-14) : ce filtre n'existait qu'à la couche
 intermediate. En staging, [`stg_fct_ast.sql`](../models/staging/faits/stg_fct_ast.sql)
-ne filtre pas du tout le `source` — il relit et refait un `left join` sur
-**toute** la table source à chaque run pour décider quel `id_stg_fct_ast`
-attribuer (voir section 2). `stg_fct_ope.sql`, lui, filtre bien via un
-`not in` équivalent dans sa CTE `new_records`. Cette incohérence entre
-`stg_fct_ast` et `stg_fct_ope` n'est pas volontaire — c'est le genre d'écart
-qu'un run de démo à faible volume ne révèle jamais, mais qu'un run de
-production le ferait immédiatement (temps de run staging qui explose).
+ne filtrait pas du tout le `source` — il relisait et refaisait un `left join`
+sur **toute** la table source à chaque run pour décider quel `id_stg_fct_ast`
+attribuer (le pattern des dimensions, voir section 2), alors que
+`stg_fct_ope.sql` filtrait déjà via un `not in` équivalent dans sa CTE
+`new_records`. `stg_fct_ast.sql` a été aligné sur le pattern insert-only de
+`stg_fct_ope.sql` : il utilise désormais la même CTE `new_records` avec un
+`where cd_fct_ast not in (select cd_fct_ast from existing)`. Correction
+vérifiée en full-refresh, en run incrémental sans nouvelle ligne (aucune
+réémission), et avec une ligne injectée (nouvel ID `MAX+1`, IDs existants
+inchangés) — 28/28 tests passent. Ce point précis est donc réglé ; le reste
+de cette section (coût du `NOT IN` à l'échelle sur `int_fct_*`) reste
+d'actualité.
 
 **Évolution proposée.**
 
@@ -189,24 +195,27 @@ where cal.dt_fct >= src.dt_cre
 ```
 
 `calendar` vient de [`stg_set_cal.sql`](../models/staging/dimensions/stg_set_cal.sql),
-qui génère une date par fin de mois entre le **1er janvier 2024, codé en
-dur**, et aujourd'hui, plus la date du jour :
+qui génère une date par fin de mois entre une date de départ et aujourd'hui,
+plus la date du jour :
 
 ```sql
 select unnest(generate_series(
-    date_trunc('month', date '2024-01-01'),
+    date_trunc('month', date '{{ var("start_date") }}'),
     date_trunc('month', current_date),
     interval '1 month'
 )) as month_start
 ```
 
-**Constat concret, pas une généralité.** `dbt_project.yml` déclare bien
-`vars: start_date: '2024-01-01'` — mais cette variable **n'est référencée
-nulle part dans le code**. `stg_set_cal.sql` hardcode la même date en dur
-au lieu de lire `{{ var('start_date') }}`. Le `var` existe comme s'il avait
-été prévu pour borner cette génération, mais le branchement n'a jamais été
-fait. C'est exactement le genre d'écart que ce document est censé
-révéler plutôt que de le laisser dormir.
+**Constat concret, pas une généralité — identifié puis corrigé.**
+`dbt_project.yml` déclarait bien `vars: start_date: '2024-01-01'`, mais
+cette variable n'était référencée nulle part dans le code : `stg_set_cal.sql`
+hardcodait la même date en dur au lieu de lire `{{ var('start_date') }}`.
+Corrigé (commit `217e3e2`, 2026-07-14) dans les deux branches du modèle
+(DuckDB et Snowflake), sans changer la valeur par défaut ni le comportement
+observé (`min(dt_fct)`/`max(dt_fct)` identiques avant/après sur les données
+actuelles). Ce qui reste vrai, en revanche, et que ce branchement ne règle
+pas : la borne n'agit que sur la longueur du calendrier, pas sur la taille
+du `cross join` lui-même (voir plus bas).
 
 **Comportement à l'échelle.** Le `cross join` produit, avant filtrage,
 `nb_dates_calendrier × nb_versions_SCD2_totales` lignes. En démo (~10
@@ -219,11 +228,13 @@ le produit cartésien avant filtre devient rapidement ingérable — d'autant
 que `int_cli`/`int_ptf` sont des **vues** (section 3) : ce cross join se
 réexécute intégralement à chaque lecture, pas une fois par build.
 
-**Évolution proposée.**
+**Évolution proposée** (le point 1 est fait, les points 2 et 3 restent
+ouverts) :
 
-1. Brancher `{{ var('start_date') }}` dans `stg_set_cal.sql` — trivial,
-   et ça rend la borne configurable par environnement (démo vs prod)
-   sans toucher au SQL.
+1. ~~Brancher `{{ var('start_date') }}` dans `stg_set_cal.sql`~~ — fait
+   (commit `217e3e2`). Ça rend la borne configurable par environnement
+   (démo vs prod) sans toucher au SQL, mais ça ne réduit pas la
+   combinatoire du cross join lui-même — voir points suivants.
 2. Ne plus croiser le calendrier global avec **toutes** les versions SCD2 :
    borner la génération de dates par ligne à sa propre fenêtre de validité
    (`dbt_valid_from`/`dbt_valid_to` de la ligne, pas le calendrier entier),
