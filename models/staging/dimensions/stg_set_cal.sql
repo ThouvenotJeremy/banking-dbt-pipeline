@@ -1,3 +1,10 @@
+{{
+    config(
+        materialized='incremental',
+        unique_key='dt_fct'
+    )
+}}
+
 {% if target.type == 'duckdb' %}
 
     with months as (
