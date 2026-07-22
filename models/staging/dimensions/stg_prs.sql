@@ -11,10 +11,10 @@ with source as (
 
 {% if is_incremental() %}
 existing as (
-    select cd_prs, id_st0_prs from {{ this }}
+    select cd_prs, id_stg_prs from {{ this }}
 ),
 max_id as (
-    select coalesce(max(id_st0_prs), 0) as val from {{ this }}
+    select coalesce(max(id_stg_prs), 0) as val from {{ this }}
 ),
 {% endif %}
 
@@ -22,7 +22,7 @@ enriched as (
     select
         s.*,
         {% if is_incremental() %}
-        e.id_st0_prs                                                as existing_id,
+        e.id_stg_prs                                                as existing_id,
         row_number() over (
             partition by (e.cd_prs is null)
             order by s.cd_prs
@@ -46,7 +46,7 @@ select
             rn
             {% endif %}
         ) as decimal(15,0)
-    )                                                               as id_st0_prs,
+    )                                                               as id_stg_prs,
 
     current_timestamp                                               as ts_stg,
     cast(strftime(current_timestamp, '%Y%m%d') as decimal(15,0))   as vr_stg,
